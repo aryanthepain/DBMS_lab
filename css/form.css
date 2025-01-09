@@ -74,6 +74,10 @@ body {
   color: white;
 }
 
+.single_search_result {
+  padding-block: 30px;
+}
+
 /* responsive */
 @media only screen and (max-width: 515px) {
   .sform > div > div {

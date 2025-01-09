@@ -1,101 +1,78 @@
-<div class="sellform">
-    <h1 class="sftitle">Search Results</h1>
-
-    <div class="sfcontainer">
-        <form
-            class="sform"
-            action="include/handleInsert.inc.php"
-            method="post"
-            id="sellform">
+<div class="single_search_result">
+    <div
+        class="sform"
+        id="sellform">
+        <div>
             <div>
-                <div>
-                    <label class="sflabel" htmlFor="sfaddress">
-                        First Name
-                    </label>
-                    <input
-                        type="text"
-                        class="sfinput"
-                        required
-                        id="sfaddress"
-                        name="firstName" />
+                <div class="sflabel">
+                    Roll Number:
                 </div>
-                <div>
-                    <label class="sflabel" htmlFor="sftype">
-                        Last Name
-                    </label>
-                    <input
-                        type="text"
-                        class="sfinput"
-                        required
-                        id="sftype"
-                        name="lastName" />
-                </div>
-                <div>
-                    <label class="sflabel" htmlFor="sftype">
-                        Date of Birth
-                    </label>
-                    <input
-                        type="date"
-                        class="sfinput"
-                        required
-                        id="sftype"
-                        name="dob" />
+                <div class="sfinput">
+                    <?php echo htmlspecialchars($row["Roll_number"]); ?>
                 </div>
             </div>
             <div>
-                <div>
-                    <label class="sflabel" htmlFor="sfaddress">
-                        Branch
-                    </label>
-                    <input
-                        type="text"
-                        class="sfinput"
-                        required
-                        id="sfaddress"
-                        name="branch" />
+                <div class="sflabel">
+                    First Name:
                 </div>
-                <div>
-                    <label class="sflabel" htmlFor="sftype">
-                        Phone Number
-                    </label>
-                    <input
-                        type="text"
-                        class="sfinput"
-                        required
-                        id="sftype"
-                        name="phone_no" />
-                </div>
-                <div>
-                    <label class="sflabel" htmlFor="sftype">
-                        Hostel
-                    </label>
-                    <input
-                        type="text"
-                        class="sfinput"
-                        required
-                        id="sftype"
-                        name="hostel" />
+                <div class="sfinput">
+                    <?php echo htmlspecialchars($row["First_name"]); ?>
                 </div>
             </div>
             <div>
-                <div>
-                    <label class="sflabel" htmlFor="sfaddress">
-                        CPI
-                    </label>
-                    <input
-                        type="number"
-                        max="10"
-                        min="0"
-                        value="0"
-                        step="0.01"
-                        class="sfinput"
-                        required
-                        id="sfaddress"
-                        name="CPI" />
+                <div class="sflabel">
+                    Last Name:
+                </div>
+                <div class="sfinput">
+                    <?php echo htmlspecialchars($row["Last_name"]); ?>
+                </div>
+            </div>
+            <div>
+                <div class="sflabel">
+                    Branch:
+                </div>
+                <div class="sfinput">
+                    <?php echo htmlspecialchars($row["branch"]); ?>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div>
+                <div class="sflabel">
+                    Date of Birth:
+                </div>
+                <div class="sfinput">
+                    <?php echo htmlspecialchars($row["DOB"]); ?>
                 </div>
             </div>
 
-        </form>
+            <div>
+                <div class="sflabel">
+                    Hostel:
+                </div>
+                <div class="sfinput">
+                    <?php echo htmlspecialchars($row["Hostel"]); ?>
+                </div>
+            </div>
+            <div>
+                <div class="sflabel">
+                    Phone Number:
+                </div>
+                <div class="sfinput">
+                    <?php echo htmlspecialchars($row["Phone_no"]); ?>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div>
+                <div class="sflabel">
+                    CPI:
+                </div>
+                <div class="sfinput">
+                    <?php echo htmlspecialchars($row["GPA"]); ?>
+                </div>
+            </div>
+        </div>
     </div>
-    <button class="sfsubmit" id="go_back_btn" onclick="window.location.href='index.php'">Go Back</button>
 </div>

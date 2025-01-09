@@ -60,12 +60,26 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
 <body>
     <?php
-    var_dump($results);
     if (empty($results)) {
         display_alert("No search results found.");
         die();
-    } else {
-        include "forms/searchResults.php";
+    } else { ?>
+        <div class="sellform">
+            <h1 class="sftitle">Search Results</h1>
+
+            <div class="sfcontainer">
+
+                <?php
+
+                foreach ($results as $row) {
+                    include "forms/searchResults.php";
+                }
+                ?>
+
+            </div>
+            <button class="sfsubmit" id="go_back_btn" onclick="window.location.href='index.php'">Go Back</button>
+        </div>
+    <?php
     }
     ?>
 </body>
