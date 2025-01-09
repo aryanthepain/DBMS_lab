@@ -4,7 +4,7 @@
     <div class="sfcontainer">
         <form
             class="sform"
-            action="include/handleSelect.inc.php"
+            action="handleSelect.php"
             method="post"
             id="sellform">
             <div>
@@ -17,6 +17,8 @@
                             type="number"
                             class="sfinput"
                             id="sfaddress"
+                            min="1"
+                            step="1"
                             name="roll_no" />
                     </div>
                 </div>
