@@ -51,3 +51,5 @@ VALUES
 
 INSERT INTO students (First_name,Last_name,DOB,branch,Phone_no,Hostel,GPA)
 VALUES(:firstName,:lastName,:dob,:branch,:phone_no,:hostel,:CPI);
+
+SELECT * FROM students WHERE Roll_number=1;
