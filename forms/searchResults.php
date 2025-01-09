@@ -97,5 +97,5 @@
 
         </form>
     </div>
-    <button class="sfsubmit" onclick="window.location.href='index.php'">Go Back</button>
+    <button class="sfsubmit" id="go_back_btn" onclick="window.location.href='index.php'">Go Back</button>
 </div>
