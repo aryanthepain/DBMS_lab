@@ -80,7 +80,7 @@
             <div>
                 <div>
                     <label class="sflabel" htmlFor="sfaddress">
-                        First Name
+                        CPI
                     </label>
                     <input
                         type="number"
@@ -95,7 +95,7 @@
                 </div>
             </div>
 
-            <input type="submit" value="Submit" class="sfsubmit" />
+            <input type="submit" value="Insert" class="sfsubmit" />
         </form>
     </div>
 </div>
