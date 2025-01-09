@@ -8,10 +8,11 @@
     <link rel="stylesheet" href="css/form.css">
 </head>
 
-<body>
-
+<body margin="0%">
     <?php
+    // all the forms
     include("forms/insertForm.php");
+    include("forms/selectForm.php");
     ?>
 </body>
 
