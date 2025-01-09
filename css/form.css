@@ -64,6 +64,16 @@ body {
   color: black;
 }
 
+#go_back_btn {
+  border-color: black;
+  background-color: white;
+  color: black;
+}
+#go_back_btn:hover {
+  background-color: inherit;
+  color: white;
+}
+
 /* responsive */
 @media only screen and (max-width: 515px) {
   .sform > div > div {
