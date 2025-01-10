@@ -4,9 +4,10 @@
     <div class="sfcontainer">
         <form
             class="sform"
-            action="handleSelect.php"
+            action="include/handleDelete.inc.php"
             method="post"
             id="sellform">
+
             <div>
                 <div>
                     <div>
