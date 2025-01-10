@@ -10,13 +10,13 @@
             <div>
                 <div>
                     <div>
-                        <label class="sflabel" htmlFor="sfaddress">
+                        <label class="sflabel" for="sroll">
                             Roll Number
                         </label>
                         <input
                             type="number"
                             class="sfinput"
-                            id="sfaddress"
+                            id="sroll"
                             min="1"
                             step="1"
                             name="roll_no" />
@@ -29,23 +29,23 @@
 
                 <div>
                     <div>
-                        <label class="sflabel" htmlFor="sfaddress">
+                        <label class="sflabel" for="sfirst">
                             First Name
                         </label>
                         <input
                             type="text"
                             class="sfinput"
-                            id="sfaddress"
+                            id="sfirst"
                             name="firstName" />
                     </div>
                     <div>
-                        <label class="sflabel" htmlFor="sftype">
+                        <label class="sflabel" for="slast">
                             Last Name
                         </label>
                         <input
                             type="text"
                             class="sfinput"
-                            id="sftype"
+                            id="slast"
                             name="lastName" />
                     </div>
                 </div>

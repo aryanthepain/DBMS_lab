@@ -9,53 +9,53 @@
             id="sellform">
             <div>
                 <div>
-                    <label class="sflabel" htmlFor="sfaddress">
+                    <label class="sflabel" for="ifirst">
                         First Name
                     </label>
                     <input
                         type="text"
                         class="sfinput"
                         required
-                        id="sfaddress"
+                        id="ifirst"
                         name="firstName" />
                 </div>
                 <div>
-                    <label class="sflabel" htmlFor="sftype">
+                    <label class="sflabel" for="ilast">
                         Last Name
                     </label>
                     <input
                         type="text"
                         class="sfinput"
                         required
-                        id="sftype"
+                        id="ilast"
                         name="lastName" />
                 </div>
                 <div>
-                    <label class="sflabel" htmlFor="sftype">
+                    <label class="sflabel" for="idob">
                         Date of Birth
                     </label>
                     <input
                         type="date"
                         class="sfinput"
                         required
-                        id="sftype"
+                        id="idob"
                         name="dob" />
                 </div>
             </div>
             <div>
                 <div>
-                    <label class="sflabel" htmlFor="sfaddress">
+                    <label class="sflabel" for="ibranch">
                         Branch
                     </label>
                     <input
                         type="text"
                         class="sfinput"
                         required
-                        id="sfaddress"
+                        id="ibranch"
                         name="branch" />
                 </div>
                 <div>
-                    <label class="sflabel" htmlFor="sftype">
+                    <label class="sflabel" for="iphone">
                         Phone Number
                     </label>
                     <input
@@ -64,24 +64,24 @@
                         max="9999999999"
                         class="sfinput"
                         required
-                        id="sftype"
+                        id="iphone"
                         name="phone_no" />
                 </div>
                 <div>
-                    <label class="sflabel" htmlFor="sftype">
+                    <label class="sflabel" for="ihostel">
                         Hostel
                     </label>
                     <input
                         type="text"
                         class="sfinput"
                         required
-                        id="sftype"
+                        id="ihostel"
                         name="hostel" />
                 </div>
             </div>
             <div>
                 <div>
-                    <label class="sflabel" htmlFor="sfaddress">
+                    <label class="sflabel" for="icpi">
                         CPI
                     </label>
                     <input
@@ -92,7 +92,7 @@
                         step="0.01"
                         class="sfinput"
                         required
-                        id="sfaddress"
+                        id="icpi"
                         name="CPI" />
                 </div>
             </div>

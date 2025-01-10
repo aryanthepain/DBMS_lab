@@ -10,14 +10,14 @@
 
             <div>
                 <div>
-                    <label class="sflabel" htmlFor="sfaddress">
+                    <label class="sflabel" for="mroll">
                         Current Roll Number
                     </label>
                     <input
                         type="text"
                         class="sfinput"
                         required
-                        id="sfaddress"
+                        id="mroll"
                         name="roll_no" />
                 </div>
             </div>
@@ -28,49 +28,49 @@
             </div>
             <div>
                 <div>
-                    <label class="sflabel" htmlFor="sfaddress">
+                    <label class="sflabel" for="mfirst">
                         First Name
                     </label>
                     <input
                         type="text"
                         class="sfinput"
-                        id="sfaddress"
+                        id="mfirst"
                         name="firstName" />
                 </div>
                 <div>
-                    <label class="sflabel" htmlFor="sftype">
+                    <label class="sflabel" for="mlast">
                         Last Name
                     </label>
                     <input
                         type="text"
                         class="sfinput"
-                        id="sftype"
+                        id="mlast"
                         name="lastName" />
                 </div>
                 <div>
-                    <label class="sflabel" htmlFor="sftype">
+                    <label class="sflabel" for="mdob">
                         Date of Birth
                     </label>
                     <input
                         type="date"
                         class="sfinput"
-                        id="sftype"
+                        id="mdob"
                         name="dob" />
                 </div>
             </div>
             <div>
                 <div>
-                    <label class="sflabel" htmlFor="sfaddress">
+                    <label class="sflabel" for="mbranch">
                         Branch
                     </label>
                     <input
                         type="text"
                         class="sfinput"
-                        id="sfaddress"
+                        id="mbranch"
                         name="branch" />
                 </div>
                 <div>
-                    <label class="sflabel" htmlFor="sftype">
+                    <label class="sflabel" for="mphone">
                         Phone Number
                     </label>
                     <input
@@ -78,23 +78,23 @@
                         min="1000000000"
                         max="9999999999"
                         class="sfinput"
-                        id="sftype"
+                        id="mphone"
                         name="phone_no" />
                 </div>
                 <div>
-                    <label class="sflabel" htmlFor="sftype">
+                    <label class="sflabel" for="mhostel">
                         Hostel
                     </label>
                     <input
                         type="text"
                         class="sfinput"
-                        id="sftype"
+                        id="mhostel"
                         name="hostel" />
                 </div>
             </div>
             <div>
                 <div>
-                    <label class="sflabel" htmlFor="sfaddress">
+                    <label class="sflabel" for="mcpi">
                         CPI
                     </label>
                     <input
@@ -103,7 +103,7 @@
                         min="0"
                         step="0.01"
                         class="sfinput"
-                        id="sfaddress"
+                        id="mcpi"
                         name="CPI" />
                 </div>
             </div>
