@@ -8,24 +8,6 @@
             method="post"
             id="sellform">
             <div>
-                <div>
-                    <div>
-                        <label class="sflabel" for="sroll">
-                            Roll Number
-                        </label>
-                        <input
-                            type="number"
-                            class="sfinput"
-                            id="sroll"
-                            min="1"
-                            step="1"
-                            name="roll_no" />
-                    </div>
-                </div>
-
-                <h3>
-                    OR
-                </h3>
 
                 <div>
                     <div>
@@ -47,6 +29,25 @@
                             class="sfinput"
                             id="slast"
                             name="lastName" />
+                    </div>
+                </div>
+
+                <h3>
+                    OR
+                </h3>
+
+                <div>
+                    <div>
+                        <label class="sflabel" for="sroll">
+                            Roll Number
+                        </label>
+                        <input
+                            type="number"
+                            class="sfinput"
+                            id="sroll"
+                            min="1"
+                            step="1"
+                            name="roll_no" />
                     </div>
                 </div>
 
