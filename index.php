@@ -13,6 +13,7 @@
     // all the forms
     include("forms/insertForm.php");
     include("forms/selectForm.php");
+    include("forms/deleteForm.php");
     ?>
 </body>
 
