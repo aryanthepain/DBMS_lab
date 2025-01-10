@@ -74,7 +74,9 @@
                         Phone Number
                     </label>
                     <input
-                        type="text"
+                        type="number"
+                        min="1000000000"
+                        max="9999999999"
                         class="sfinput"
                         id="sftype"
                         name="phone_no" />
