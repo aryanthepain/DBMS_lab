@@ -1,11 +1,22 @@
 CREATE TABLE
     students (
-        Roll_number BIGINT PRIMARY key auto_increment NOT NULL,
-        First_name VARCHAR(25) NOT NULL,
-        Last_name VARCHAR(25) NOT NULL,
-        DOB DATE NOT NULL,
-        branch VARCHAR(10) NOT NULL,
-        Phone_no INT NOT NULL,
-        Hostel VARCHAR(50) NOT NULL,
-        GPA FLOAT NOT NULL
+        Roll_number INT (9) PRIMARY key NOT NULL,
+        first_name VARCHAR(25) NOT NULL
+    );
+
+CREATE TABLE
+    books (
+        book_id INT (5) PRIMARY key NOT NULL,
+        book_name VARCHAR(25) NOT NULL
+    );
+
+CREATE TABLE
+    has_issued (
+        transaction_id INT PRIMARY key NOT NULL auto_increment,
+        book_id INT (5) NOT NULL,
+        Roll_number INT (9) NOT NULL,
+        issue_date TIME NOT NULL,
+        return_date TIME NULL,
+        FOREIGN key (book_id) REFERENCES books (book_id),
+        FOREIGN key (Roll_number) REFERENCES students (Roll_number)
     );
