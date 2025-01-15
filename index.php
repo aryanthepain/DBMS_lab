@@ -12,6 +12,7 @@
     <?php
     // all the forms
     include("forms/insertStudentForm.php");
+    include("forms/insertBookForm.php");
     include("forms/selectForm.php");
     include("forms/deleteForm.php");
     include("forms/modifyForm.php");
