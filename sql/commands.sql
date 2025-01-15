@@ -53,3 +53,34 @@ INSERT INTO students (First_name,Last_name,DOB,branch,Phone_no,Hostel,GPA)
 VALUES(:firstName,:lastName,:dob,:branch,:phone_no,:hostel,:CPI);
 
 SELECT * FROM students WHERE Roll_number=1;
+
+CREATE TABLE
+    students (
+        Roll_number INT (9) PRIMARY key NOT NULL,
+        first_name VARCHAR(25) NOT NULL
+    );
+
+CREATE TABLE
+    books (
+        book_id INT (5) PRIMARY key NOT NULL,
+        book_name VARCHAR(25) NOT NULL
+    );
+
+CREATE TABLE
+    has_issued (
+        transaction_id INT PRIMARY key NOT NULL auto_increment,
+        book_id INT (5) NOT NULL,
+        Roll_number INT (9) NOT NULL,
+        issue_date TIME NOT NULL,
+        return_date TIME NULL,
+        FOREIGN key (book_id) REFERENCES books (book_id),
+        FOREIGN key (Roll_number) REFERENCES students (Roll_number)
+    );
+
+SELECT * FROM students where Roll_number=1;
+
+INSERT INTO students (first_name,Roll_number)
+VALUES(firstName, roll);
+
+ALTER TABLE has_issued
+MODIFY COLUMN issue_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
