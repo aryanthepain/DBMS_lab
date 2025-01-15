@@ -1,34 +1,23 @@
 <div class="sellform">
-    <h1 class="sftitle">Search in the DataBase</h1>
+    <h1 class="sftitle">Search Book</h1>
 
     <div class="sfcontainer">
         <form
             class="sform"
             action="handleSelect.php"
-            method="post"
-            id="sellform">
+            method="post">
             <div>
 
                 <div>
                     <div>
                         <label class="sflabel" for="sfirst">
-                            First Name
+                            Book Name
                         </label>
                         <input
                             type="text"
                             class="sfinput"
                             id="sfirst"
                             name="firstName" />
-                    </div>
-                    <div>
-                        <label class="sflabel" for="slast">
-                            Last Name
-                        </label>
-                        <input
-                            type="text"
-                            class="sfinput"
-                            id="slast"
-                            name="lastName" />
                     </div>
                 </div>
 
@@ -39,14 +28,14 @@
                 <div>
                     <div>
                         <label class="sflabel" for="sroll">
-                            Roll Number
+                            Book ID
                         </label>
                         <input
                             type="number"
                             class="sfinput"
                             id="sroll"
-                            min="1"
-                            step="1"
+                            min="10000"
+                            max="99999"
                             name="roll_no" />
                     </div>
                 </div>

@@ -10,23 +10,22 @@ function display_alert($message = "Invalid message", $location = "index.php")
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $roll_no = $_POST["roll_no"];
     $firstName = $_POST["firstName"];
-    $lastName = $_POST["lastName"];
 
     try {
         require_once "include/dbh.inc.php";
 
         // creating query for select
         if (!empty($roll_no)) {
-            $query = "SELECT * FROM students WHERE Roll_number=:roll_no;";
+            $query = "SELECT * FROM books WHERE book_id=:roll_no;";
 
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(":roll_no", $roll_no);
-        } else if (isset($firstName) and isset($lastName)) {
-            $query = 'SELECT * FROM students WHERE First_name=:firstName AND Last_name=:lastName;';
+        } else if (isset($firstName)) {
+            $query = 'SELECT * FROM books WHERE book_name=:firstName;';
+            $firstName = "%" . $firstName . "%";
 
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(":firstName", $firstName);
-            $stmt->bindParam(":lastName", $lastName);
         } else {
             $pdo = null;
             $stmt = null;
