@@ -21,10 +21,11 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 
         $stmt->bindParam(":roll", $roll_no);
 
-        $results = $stmt->execute();
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
         $stmt = null;
 
-        if (!$results) {
+        if ($result) {
             $pdo = null; // close the connection
             display_alert("Roll Number already exists. Press enter to continue.", "../index.php");
         }
