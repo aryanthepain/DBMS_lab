@@ -1,7 +1,7 @@
 <?php
 // connect to the database server
 
-$dsn = "mysql:host=localhost;dbname=lab1_student";
+$dsn = "mysql:host=localhost;dbname=lab2_library";
 $dbusername = "root";
 $dbpassword = "";
 
