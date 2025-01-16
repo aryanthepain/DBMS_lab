@@ -11,7 +11,6 @@
 <body margin="0%">
     <?php
     // all the forms
-    include("forms/queryForm.php");
     include("forms/insertStudentForm.php");
     include("forms/insertBookForm.php");
     include("forms/selectForm.php");
@@ -19,6 +18,7 @@
     include("forms/returnForm.php");
     include("forms/modifyForm.php");
     include("forms/deleteForm.php");
+    include("forms/queryForm.php");
     ?>
 </body>
 
