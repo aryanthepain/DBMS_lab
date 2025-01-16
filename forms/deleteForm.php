@@ -1,5 +1,5 @@
 <div class="sellform">
-    <h1 class="sftitle">Delete in the DataBase</h1>
+    <h1 class="sftitle">Delete Student Info</h1>
 
     <div class="sfcontainer">
         <form
@@ -16,10 +16,10 @@
                         </label>
                         <input
                             type="number"
+                            min="100000000"
+                            max="999999999"
                             class="sfinput"
                             id="droll"
-                            min="1"
-                            step="1"
                             name="roll_no" />
                     </div>
                 </div>

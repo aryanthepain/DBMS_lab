@@ -1,4 +1,6 @@
 <?php
+require_once "../functions/display_alert.php";
+
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $roll_no = $_POST["roll_no"];
 
@@ -18,10 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         $stmt = null;
 
         // pop up upon submission
-        echo '<script type="text/javascript">
-                alert("Record successfully deleted. Press enter to continue");
-                window.location.href = "../index.php";
-                </script>';
+        display_alert("Record successfully deleted. Press enter to continue.", "../index.php");
 
 
         die();
