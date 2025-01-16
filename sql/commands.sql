@@ -49,10 +49,33 @@ VALUES
         8.0
     );
 
-INSERT INTO students (First_name,Last_name,DOB,branch,Phone_no,Hostel,GPA)
-VALUES(:firstName,:lastName,:dob,:branch,:phone_no,:hostel,:CPI);
+INSERT INTO
+    students (
+        First_name,
+        Last_name,
+        DOB,
+        branch,
+        Phone_no,
+        Hostel,
+        GPA
+    )
+VALUES
+    (
+        firstName,
+        lastName,
+        dob,
+        branch,
+        phone_no,
+        hostel,
+        CPI
+    );
 
-SELECT * FROM students WHERE Roll_number=1;
+SELECT
+    *
+FROM
+    students
+WHERE
+    Roll_number = 1;
 
 CREATE TABLE
     students (
@@ -77,10 +100,28 @@ CREATE TABLE
         FOREIGN key (Roll_number) REFERENCES students (Roll_number)
     );
 
-SELECT * FROM students where Roll_number=1;
+SELECT
+    *
+FROM
+    students
+WHERE
+    Roll_number = 1;
 
-INSERT INTO students (first_name,Roll_number)
-VALUES(firstName, roll);
+INSERT INTO
+    students (first_name, Roll_number)
+VALUES
+    (firstName, roll);
 
-ALTER TABLE has_issued
-MODIFY COLUMN issue_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE has_issued MODIFY COLUMN issue_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+SELECT
+    book_id
+FROM
+    has_issued
+WHERE
+    book_id = 1
+    AND return_date IS NULL
+INSERT INTO
+    `has_issued` (`book_id`, `Roll_number`)
+VALUES
+    ('[value-1]', '[value-2]');

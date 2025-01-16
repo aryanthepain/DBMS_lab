@@ -14,8 +14,9 @@
     include("forms/insertStudentForm.php");
     include("forms/insertBookForm.php");
     include("forms/selectForm.php");
-    include("forms/deleteForm.php");
-    include("forms/modifyForm.php");
+    include("forms/issueForm.php");
+    // include("forms/deleteForm.php");
+    // include("forms/modifyForm.php");
     ?>
 </body>
 
