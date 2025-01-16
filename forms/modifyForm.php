@@ -1,5 +1,5 @@
 <div class="sellform">
-    <h1 class="sftitle">Modify the DataBase</h1>
+    <h1 class="sftitle">Update Student Info</h1>
 
     <div class="sfcontainer">
         <form
@@ -14,7 +14,9 @@
                         Current Roll Number
                     </label>
                     <input
-                        type="text"
+                        type="number"
+                        min="100000000"
+                        max="999999999"
                         class="sfinput"
                         required
                         id="mroll"
@@ -36,75 +38,6 @@
                         class="sfinput"
                         id="mfirst"
                         name="firstName" />
-                </div>
-                <div>
-                    <label class="sflabel" for="mlast">
-                        Last Name
-                    </label>
-                    <input
-                        type="text"
-                        class="sfinput"
-                        id="mlast"
-                        name="lastName" />
-                </div>
-                <div>
-                    <label class="sflabel" for="mdob">
-                        Date of Birth
-                    </label>
-                    <input
-                        type="date"
-                        class="sfinput"
-                        id="mdob"
-                        name="dob" />
-                </div>
-            </div>
-            <div>
-                <div>
-                    <label class="sflabel" for="mbranch">
-                        Branch
-                    </label>
-                    <input
-                        type="text"
-                        class="sfinput"
-                        id="mbranch"
-                        name="branch" />
-                </div>
-                <div>
-                    <label class="sflabel" for="mphone">
-                        Phone Number
-                    </label>
-                    <input
-                        type="number"
-                        min="1000000000"
-                        max="9999999999"
-                        class="sfinput"
-                        id="mphone"
-                        name="phone_no" />
-                </div>
-                <div>
-                    <label class="sflabel" for="mhostel">
-                        Hostel
-                    </label>
-                    <input
-                        type="text"
-                        class="sfinput"
-                        id="mhostel"
-                        name="hostel" />
-                </div>
-            </div>
-            <div>
-                <div>
-                    <label class="sflabel" for="mcpi">
-                        CPI
-                    </label>
-                    <input
-                        type="number"
-                        max="10"
-                        min="0"
-                        step="0.01"
-                        class="sfinput"
-                        id="mcpi"
-                        name="CPI" />
                 </div>
             </div>
 

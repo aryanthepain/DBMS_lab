@@ -16,8 +16,8 @@
     include("forms/selectForm.php");
     include("forms/issueForm.php");
     include("forms/returnForm.php");
+    include("forms/modifyForm.php");
     // include("forms/deleteForm.php");
-    // include("forms/modifyForm.php");
     ?>
 </body>
 
