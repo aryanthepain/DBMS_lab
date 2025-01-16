@@ -11,6 +11,7 @@
 <body margin="0%">
     <?php
     // all the forms
+    include("forms/queryForm.php");
     include("forms/insertStudentForm.php");
     include("forms/insertBookForm.php");
     include("forms/selectForm.php");

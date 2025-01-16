@@ -16,9 +16,15 @@ body {
   color: white;
   margin-top: 0;
 }
+
 .sfcontainer {
   background-color: white;
   padding: 30px;
+  display: inline-flex;
+}
+
+div.sfcontainer {
+  display: inline-flex;
 }
 
 .sform > div {
