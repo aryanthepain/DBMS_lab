@@ -1,11 +1,6 @@
 <?php
-function display_alert($message = "Invalid message", $location = "index.php")
-{
-    echo '<script type="text/javascript">
-                alert("' . $message . '");
-                window.location.href = "' . $location . '";
-                </script>';
-}
+require_once "../functions/display_alert.php";
+require_once "../functions/console.php";
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $roll_no = $_POST["roll_no"];
@@ -19,27 +14,29 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         $query = "SELECT * FROM students WHERE Roll_number=:roll;";
 
         $stmt = $pdo->prepare($query);
-        $stmt->bindParam(":roll_no", $roll_no);
+        $stmt->bindParam(":roll", $roll_no);
         $stmt->execute();
 
         $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt = null;
 
+        // echo var_dump($results[0]["first_name"]);
+
         // no such student with roll
         if (!$results) {
             $pdo = null;
-            display_alert("Student not found");
+            display_alert("Student not found", "../index.php");
             die();
         }
 
         // creating query for update
-        $query = "UPDATE students SET First_name=:firstName;";
+        $query = "UPDATE students SET First_name=:firstName WHERE Roll_number=:roll;";
         $stmt = $pdo->prepare($query);
 
         // change to updated values, keep same if empty
         $firstName = (empty($firstName)) ? $results[0]["first_name"] : $firstName;
 
-        $stmt->bindParam(":roll_no", $roll_no);
+        $stmt->bindParam(":roll", $roll_no);
         $stmt->bindParam(":firstName", $firstName);
 
         $stmt->execute();
@@ -49,11 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         $stmt = null;
 
         // pop up upon submission
-        echo '<script type="text/javascript">
-                alert("Record successfully updated. Press enter to continue");
-                window.location.href = "../index.php";
-                </script>';
-
+        display_alert("Record successfully updated. Press enter to continue.", "../index.php");
 
         die();
     } catch (PDOException $e) {
