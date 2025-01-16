@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
             $stmt = $pdo->prepare($query);
             $stmt->bindParam(":roll_no", $roll_no);
         } else if (isset($firstName)) {
-            $query = 'SELECT * FROM books WHERE book_name=:firstName;';
+            $query = 'SELECT * FROM books WHERE book_name LIKE :firstName;';
             $firstName = "%" . $firstName . "%";
 
             $stmt = $pdo->prepare($query);
