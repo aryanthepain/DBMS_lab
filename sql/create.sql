@@ -70,6 +70,7 @@ CREATE TABLE
         transaction_ID text NOT NULL,
         end_time DATETIME NULL DEFAULT NULL,
         slot_ID BIGINT,
+        difficulty_counter INT NOT NULL DEFAULT 0,
         FOREIGN key (Roll_number) REFERENCES students (Roll_number) ON DELETE cascade,
         FOREIGN KEY (slot_ID) REFERENCES slot (slot_ID) ON DELETE SET NULL,
         FOREIGN KEY (Exam_ID) REFERENCES exam (Exam_ID) ON DELETE cascade
