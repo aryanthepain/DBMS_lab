@@ -1,10 +1,10 @@
 <?php
-include '../database/db_connect.php';
+require_once '../include/dbh.inc.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $roll = $_POST['email'];
 
-    $stmt = $pdo->prepare("SELECT email FROM userdata WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT Roll_number FROM student_password WHERE Roll_number = ?");
     $stmt->bindParam("s", $roll);
     $stmt->execute();
     $stmt->fetchAll();
@@ -15,6 +15,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo 'not exists';
     }
 
-    $stmt->close();
-    $pdo->close();
+    $stmt = null;
+    $pdo = null;
 }

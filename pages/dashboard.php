@@ -7,6 +7,8 @@ if (!isset($_SESSION['email'])) {
     header("Location: login.php");
     exit();
 }
+
+// echo var_dump($_SESSION["email"]);
 ?>
 
 <!DOCTYPE html>

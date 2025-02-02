@@ -9,13 +9,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     // Prepare and execute
-    $stmt = $pdo->prepare("SELECT password FROM student_password WHERE Roll_number = ?");
-    $stmt->bindParam("s", $roll);
+    $stmt = $pdo->prepare("SELECT password FROM student_password WHERE Roll_number = :roll");
+    $stmt->bindParam(":roll", $roll);
     $stmt->execute();
     $db_password = $stmt->fetchAll();
 
+    // echo var_dump($db_password[0]["password"]);
+
     if ($stmt->rowCount() > 0) {
-        if ($password === $db_password) {
+        if ($password === $db_password[0]["password"]) {
             $message = "Login successful";
             $toastClass = "bg-success";
             // Start the session and redirect to the dashboard or home page
