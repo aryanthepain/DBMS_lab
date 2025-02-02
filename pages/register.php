@@ -6,12 +6,12 @@ $toastClass = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = $_POST['name'];
-    $roll = $_POST['roll'];
+    $roll = $_POST['email'];
     $password = $_POST['password'];
 
     // Check if email already exists
-    $checkRoll = $pdo->prepare("SELECT Roll_number FROM student_password WHERE roll= ?");
-    $checkRoll->bindParam("s", $roll);
+    $checkRoll = $pdo->prepare("SELECT Roll_number FROM student_password WHERE roll= :roll");
+    $checkRoll->bindParam(":roll", $roll);
     $checkRoll->execute();
     $checkRoll->fetchAll();
 
