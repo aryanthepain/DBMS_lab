@@ -1,3 +1,8 @@
+<?php
+header('Location: pages/register.php');
+exit;
+?>
+<!-- 
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,11 +16,11 @@
 <body margin="0%">
     <?php
     // all the forms
-    include("forms/insertForm.php");
-    include("forms/selectForm.php");
-    include("forms/deleteForm.php");
-    include("forms/modifyForm.php");
+    header('pages/register.php');
+    // include("forms/selectForm.php");
+    // include("forms/deleteForm.php");
+    // include("forms/modifyForm.php");
     ?>
 </body>
 
-</html>
+</html> -->
