@@ -6,29 +6,51 @@ $toastClass = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = $_POST['name'];
-    $roll = $_POST['email'];
+    $roll = $_POST['roll'];
     $password = $_POST['password'];
+    $phone_no = $_POST['phone'];
+
+    // Check if a photo was uploaded
+    if (isset($_FILES['photo']) && $_FILES['photo']['error'] == UPLOAD_ERR_OK) {
+        // Convert the uploaded file to BLOB
+        $photo = file_get_contents($_FILES['photo']['tmp_name']);
+    } else {
+        // Use a default image if no photo is uploaded
+        $photo = null;
+    }
 
     // Check if email already exists
-    $checkRoll = $pdo->prepare("SELECT Roll_number FROM student_password WHERE roll= :roll");
+    $checkRoll = $pdo->prepare("SELECT Roll_number FROM student_password WHERE Roll_number= :roll");
     $checkRoll->bindParam(":roll", $roll);
     $checkRoll->execute();
     $checkRoll->fetchAll();
 
+    // var_dump($name);
+    // var_dump($roll);
+    // var_dump($password);
+    // var_dump($photo);
 
     if ($checkRoll->rowCount() > 0) {
-        $message = "Email ID already exists";
+        $message = "Roll Number already exists";
         $toastClass = "#007bff"; // Primary color
     } else {
         // Prepare and bind
-        $stmt = $pdo->prepare("INSERT INTO userdata (username, email, password) VALUES (?, ?, ?)");
-        $stmt->bindParam("sss", $username, $roll, $password);
+        $stmt = $pdo->prepare("CALL RegisterStudent(:roll, :name, :phone, :pwd, :photo);");
+        $stmt->bindParam(":roll", $roll, PDO::PARAM_INT);
+        $stmt->bindParam(":name", $name, PDO::PARAM_STR);
+        $stmt->bindParam(":phone", $phone_no, PDO::PARAM_STR);
+        $stmt->bindParam(":pwd", $password, PDO::PARAM_STR);
+        $stmt->bindParam(":photo", $photo, PDO::PARAM_LOB);
 
-        if ($stmt->execute()) {
-            $message = "Account created successfully";
-            $toastClass = "#28a745"; // Success color
-        } else {
-            $message = "Error: " . $stmt->errorInfo()[2];
+        try {
+            if ($stmt->execute()) {
+                $message = "Account created successfully";
+                $toastClass = "#28a745"; // Success color
+            } else {
+                throw new Exception($stmt->errorInfo()[2]);
+            }
+        } catch (Exception $e) {
+            $message = "Error: " . $e->getMessage();
             $toastClass = "#dc3545"; // Danger color
         }
 
@@ -55,6 +77,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body class="bg-light">
     <div class="container p-5 d-flex flex-column align-items-center">
+
+        <!-- alert after query is run -->
         <?php if ($message): ?>
             <div class="toast align-items-center text-white border-0"
                 role="alert" aria-live="assertive" aria-atomic="true"
@@ -70,6 +94,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             </div>
         <?php endif; ?>
+
+        <!-- sign up form -->
         <form method="post" class="form-control mt-5 p-4"
             style="height:auto; width:380px;
             box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
@@ -81,19 +107,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="mb-2">
                 <label for="username"><i
                         class="fa fa-user"></i> User Name</label>
-                <input type="text" name="username" id="username"
+                <input type="text" name="name" id="username"
                     class="form-control" required>
             </div>
             <div class="mb-2 mt-2">
-                <label for="email"><i
-                        class="fa fa-envelope"></i> Email</label>
-                <input type="text" name="email" id="email"
+                <label for="roll"><i
+                        class="fa fa-hashtag"></i> Roll Number</label>
+                <input type="text" name="roll" id="roll"
                     class="form-control" required>
+            </div>
+            <div class="mb-2 mt-2">
+                <label for="phone"><i
+                        class="fa fa-phone"></i> Phone Number</label>
+                <input type="text" name="phone" id="phone"
+                    class="form-control" required>
+            </div>
+            <div class="mb-2 mt-2">
+                <label for="photo"><i
+                        class="fa fa-file"></i> Photo</label>
+                <input type="file" name="photo" id="photo"
+                    class="form-control" accept="image/*">
             </div>
             <div class="mb-2 mt-2">
                 <label for="password"><i
                         class="fa fa-lock"></i> Password</label>
-                <input type="text" name="password" id="password"
+                <input type="password" name="password" id="password"
                     class="form-control" required>
             </div>
             <div class="mb-2 mt-3">
