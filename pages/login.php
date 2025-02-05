@@ -22,6 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Start the session and redirect to the dashboard or home page
             session_start();
             $_SESSION['roll'] = $roll;
+            $_SESSION['isAdmin'] = false;
             header("Location: dashboard.php");
             exit();
         } else {
