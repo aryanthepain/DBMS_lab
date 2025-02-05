@@ -3,12 +3,11 @@ session_start();
 
 // Check if the user is logged in, if
 // not then redirect them to the login page
-if (!isset($_SESSION['email'])) {
+if (!isset($_SESSION['roll'])) {
     header("Location: login.php");
     exit();
 }
 
-// echo var_dump($_SESSION["email"]);
 ?>
 
 <!DOCTYPE html>
@@ -41,7 +40,7 @@ if (!isset($_SESSION['email'])) {
                 <form class="d-flex my-2 my-lg-0">
                     <a href="./logout.php" class="btn btn-light my-2 my-sm-0"
                         type="submit" style="font-weight:bolder;color:green;">
-                        logout</a>
+                        Logout</a>
                 </form>
             </div>
         </div>
