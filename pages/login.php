@@ -5,7 +5,7 @@ $message = "";
 $toastClass = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $roll = $_POST['email'];
+    $roll = $_POST['roll'];
     $password = $_POST['password'];
 
     // Prepare and execute
@@ -14,7 +14,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->execute();
     $db_password = $stmt->fetchAll();
 
-    // echo var_dump($db_password[0]["password"]);
 
     if ($stmt->rowCount() > 0) {
         if ($password === $db_password[0]["password"]) {
@@ -22,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $toastClass = "bg-success";
             // Start the session and redirect to the dashboard or home page
             session_start();
-            $_SESSION['email'] = $roll;
+            $_SESSION['roll'] = $roll;
             header("Location: dashboard.php");
             exit();
         } else {
@@ -30,7 +29,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $toastClass = "bg-danger";
         }
     } else {
-        $message = "Email not found";
+        $message = "Roll number not found";
         $toastClass = "bg-warning";
     }
 
@@ -80,9 +79,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     style="font-weight: 700;">Login Into Your Account</h5>
             </div>
             <div class="col-mb-3">
-                <label for="email"><i
-                        class="fa fa-envelope"></i> Email</label>
-                <input type="text" name="email" id="email"
+                <label for="roll"><i
+                        class="fa fa-hashtag"></i> Roll Number</label>
+                <input type="password" name="roll" id="roll"
                     class="form-control" required>
             </div>
             <div class="col mb-3 mt-3">
