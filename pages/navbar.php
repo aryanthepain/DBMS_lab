@@ -14,28 +14,24 @@ if (session_status() == PHP_SESSION_NONE) {
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
                 <?php if (isset($_SESSION['admin'])): ?>
-                    <!-- Admin-specific links -->
                     <li class="nav-item"><a class="nav-link" href="admin_dashboard.php">Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link" href="exam_registration.php">Exam Registration</a></li>
                     <li class="nav-item"><a class="nav-link" href="create_timeslot.php">Create Time Slot</a></li>
                     <li class="nav-item"><a class="nav-link" href="book_exam_slot.php">Book Exam Slot</a></li>
-                    <li class="nav-item"><a class="nav-link" href="manage_questions.php">Manage Questions</a></li>
-                    <li class="nav-item"><a class="nav-link" href="feedback.php">Provide Feedback</a></li>
-                    <li class="nav-item"><a class="nav-link" href="dashboard_analysis.php">Analysis Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="manage_exam.php">Manage Exam</a></li>
+                    <li class="nav-item"><a class="nav-link" href="evaluation.php">Evaluation</a></li>
+                    <li class="nav-item"><a class="nav-link" href="dashboard_analysis.php">Exam Analysis</a></li>
                     <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
                 <?php elseif (isset($_SESSION['roll'])): ?>
-                    <!-- Student-specific links -->
                     <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link" href="exam_registration.php">Exam Registration</a></li>
                     <li class="nav-item"><a class="nav-link" href="booking.php">Booking & Fees</a></li>
                     <li class="nav-item"><a class="nav-link" href="schedule.php">Schedule</a></li>
                     <li class="nav-item"><a class="nav-link" href="exam_portal.php">Take Exam</a></li>
                     <li class="nav-item"><a class="nav-link" href="evaluation.php">Evaluation</a></li>
-                    <li class="nav-item"><a class="nav-link" href="dashboard_analysis.php">Analysis Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="questions_feedback.php">Questions Feedback</a></li>
+                    <li class="nav-item"><a class="nav-link" href="dashboard_analysis.php">Exam Analysis</a></li>
                     <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
                 <?php else: ?>
-                    <!-- Public links -->
                     <li class="nav-item"><a class="nav-link" href="register.php">Register</a></li>
                     <li class="nav-item"><a class="nav-link" href="login.php">Student Login</a></li>
                     <li class="nav-item"><a class="nav-link" href="admin_login.php">Admin Login</a></li>
