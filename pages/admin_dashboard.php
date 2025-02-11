@@ -20,11 +20,14 @@ if (!isset($_SESSION['admin'])) {
     <?php include 'navbar.php'; ?>
     <div class="container mt-5">
         <h2>Welcome, <?php echo htmlspecialchars($_SESSION['admin_name']); ?>!</h2>
-        <p>This is your admin dashboard.</p>
+        <p>This is your admin dashboard. Use the links below to manage exams, review student performance, and adjust settings.</p>
         <div class="list-group">
             <a href="exam_registration.php" class="list-group-item list-group-item-action">Register Exam</a>
             <a href="create_timeslot.php" class="list-group-item list-group-item-action">Create Time Slot</a>
-            <a href="book_exam_slot.php" class="list-group-item list-group-item-action">Book Exam on Slot</a>
+            <a href="book_exam_slot.php" class="list-group-item list-group-item-action">Book Exam Slot</a>
+            <a href="manage_questions.php" class="list-group-item list-group-item-action">Manage Questions</a>
+            <a href="feedback.php" class="list-group-item list-group-item-action">Provide Feedback</a>
+            <a href="dashboard_analysis.php" class="list-group-item list-group-item-action">Analysis Dashboard</a>
             <!-- Add more admin-only functions as needed -->
         </div>
     </div>
