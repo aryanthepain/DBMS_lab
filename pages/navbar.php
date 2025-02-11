@@ -12,7 +12,7 @@ if (session_status() == PHP_SESSION_NONE) {
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+                <!-- <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li> -->
                 <?php if (isset($_SESSION['admin'])): ?>
                     <li class="nav-item"><a class="nav-link" href="admin_dashboard.php">Dashboard</a></li>
                     <li class="nav-item"><a class="nav-link" href="exam_registration.php">Exam Registration</a></li>
