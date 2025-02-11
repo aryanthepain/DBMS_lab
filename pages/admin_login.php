@@ -12,6 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $pdo->prepare("SELECT password FROM examiner_password WHERE EID = :eid");
     $stmt->bindParam(":eid", $eid, PDO::PARAM_INT);
     $stmt->execute();
+    $db_password = $stmt->fetchAll();
 
     if ($db_password) {
         if ($password === $db_password[0]['password']) {
