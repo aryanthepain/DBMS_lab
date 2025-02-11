@@ -1,3 +1,3 @@
 <?php
-header('Location: pages/register.php');
+header('Location: pages/index.php');
 exit;
