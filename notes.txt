@@ -1,0 +1,7 @@
+add customer
+take reservation
+food menu
+add room
+book room to customer
+amenities(solely based on loyalty points)
+points system loyalty points
