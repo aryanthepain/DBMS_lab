@@ -8,6 +8,7 @@ require_once '../include/dbh.inc.php'; // Assumes $pdo is a valid PDO connection
 $admin_id = $_SESSION['eid'];
 
 // Initialize message variables.
+$createExamMsg  = "";
 $addQuestionMsg = "";
 $feedbackMsg    = "";
 $addAdminMsg    = "";
@@ -17,11 +18,28 @@ $analysisResult = [];
 // -------------------------
 // Process Form Submissions
 // -------------------------
-
 if (isset($_POST['action'])) {
     $action = $_POST['action'];
-    // (A) Add Question
-    if ($action === 'add_question') {
+    // (A) Create Exam
+    if ($action === 'create_exam') {
+        $exam_name = $_POST['exam_name'];
+        $fees      = $_POST['fees'];
+        $stmt = $pdo->prepare("INSERT INTO exam (name, fees) VALUES (?, ?)");
+        if ($stmt->execute([$exam_name, $fees])) {
+            $new_exam_id = $pdo->lastInsertId();
+            // Assign current admin to the newly created exam.
+            $stmt = $pdo->prepare("INSERT INTO administered_by (EID, Exam_ID) VALUES (?, ?)");
+            if ($stmt->execute([$admin_id, $new_exam_id])) {
+                $createExamMsg = "Exam created and assigned successfully!";
+            } else {
+                $createExamMsg = "Exam created, but assignment failed.";
+            }
+        } else {
+            $createExamMsg = "Exam creation failed.";
+        }
+    }
+    // (B) Add Question
+    elseif ($action === 'add_question') {
         $exam_id       = $_POST['exam_id'];
         $question_text = $_POST['question_text'];
         $difficulty    = $_POST['difficulty'];
@@ -46,10 +64,10 @@ if (isset($_POST['action'])) {
             $addQuestionMsg = "Failed to add question.";
         }
     }
-    // (B) Submit Feedback
+    // (C) Submit Feedback
     elseif ($action === 'submit_feedback') {
-        $booking_id       = $_POST['booking_id']; // The booking ID for the selected student/exam.
-        $feedbackEntries  = $_POST['feedback'];   // Associative array: feedback[QID] => text.
+        $booking_id      = $_POST['booking_id']; // The booking ID for the selected student/exam.
+        $feedbackEntries = $_POST['feedback'];    // Associative array: feedback[QID] => text.
         foreach ($feedbackEntries as $qid => $feedback_text) {
             if (trim($feedback_text) !== "") {
                 // Check if feedback already exists.
@@ -63,7 +81,7 @@ if (isset($_POST['action'])) {
         }
         $feedbackMsg = "Feedback submitted successfully!";
     }
-    // (C) Add Administrator
+    // (D) Add Administrator
     elseif ($action === 'add_admin') {
         $exam_id            = $_POST['exam_id'];
         $new_admin_eid      = $_POST['new_admin_eid'];
@@ -75,7 +93,6 @@ if (isset($_POST['action'])) {
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM examiners WHERE EID = ?");
         $stmt->execute([$new_admin_eid]);
         if ($stmt->fetchColumn() == 0) {
-            // check if all details are present
             if ($new_admin_name && $new_admin_phone && $new_admin_password) {
                 // Insert new administrator.
                 $stmt = $pdo->prepare("INSERT INTO examiners (EID, name, Phone_no) VALUES (?, ?, ?)");
@@ -100,7 +117,7 @@ if (isset($_POST['action'])) {
             $addAdminMsg .= "Administrator is already assigned to this exam.";
         }
     }
-    // (D) Add Time Slot
+    // (E) Add Time Slot
     elseif ($action === 'add_timeslot') {
         $exam_id    = $_POST['exam_id'];
         $start_time = $_POST['start_time'];
@@ -133,7 +150,7 @@ $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // For the Feedback section:
 // If an exam and student are selected via GET parameters.
-$selected_exam_id   = isset($_GET['exam_id']) ? $_GET['exam_id'] : "";
+$selected_exam_id    = isset($_GET['exam_id']) ? $_GET['exam_id'] : "";
 $selected_student_id = isset($_GET['student_id']) ? $_GET['student_id'] : "";
 $feedback_data = [];
 $booking_id_for_feedback = null;
@@ -203,6 +220,9 @@ if ($analysis_exam_id) {
         <!-- Bootstrap Tabs for different functionalities -->
         <ul class="nav nav-tabs" id="manageExamTab" role="tablist">
             <li class="nav-item" role="presentation">
+                <button class="nav-link" id="create-exam-tab" data-bs-toggle="tab" data-bs-target="#create-exam" type="button" role="tab" aria-controls="create-exam" aria-selected="false">Create Exam</button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="add-question-tab" data-bs-toggle="tab" data-bs-target="#add-question" type="button" role="tab" aria-controls="add-question" aria-selected="false">Add Question</button>
             </li>
             <li class="nav-item" role="presentation">
@@ -219,6 +239,23 @@ if ($analysis_exam_id) {
             </li>
         </ul>
         <div class="tab-content" id="manageExamTabContent">
+            <!-- Create Exam Tab -->
+            <div class="tab-pane fade" id="create-exam" role="tabpanel" aria-labelledby="create-exam-tab">
+                <h3 class="mt-3">Create a New Exam</h3>
+                <?php if ($createExamMsg) echo '<div class="alert alert-success">' . $createExamMsg . '</div>'; ?>
+                <form method="post" action="manage_exam.php">
+                    <input type="hidden" name="action" value="create_exam">
+                    <div class="mb-3">
+                        <label for="exam_name" class="form-label">Exam Name</label>
+                        <input type="text" name="exam_name" id="exam_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fees" class="form-label">Fees</label>
+                        <input type="number" name="fees" id="fees" class="form-control" min="0" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Exam</button>
+                </form>
+            </div>
             <!-- Add Question Tab -->
             <div class="tab-pane fade" id="add-question" role="tabpanel" aria-labelledby="add-question-tab">
                 <h3 class="mt-3">Add a New Question</h3>
