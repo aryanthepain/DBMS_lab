@@ -19,7 +19,6 @@ if (session_status() == PHP_SESSION_NONE) {
                     <li class="nav-item"><a class="nav-link" href="create_timeslot.php">Create Time Slot</a></li>
                     <li class="nav-item"><a class="nav-link" href="book_exam_slot.php">Book Exam Slot</a></li>
                     <li class="nav-item"><a class="nav-link" href="manage_exam.php">Manage Exam</a></li>
-                    <li class="nav-item"><a class="nav-link" href="evaluation.php">Evaluation</a></li>
                     <li class="nav-item"><a class="nav-link" href="dashboard_analysis.php">Exam Analysis</a></li>
                     <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
                 <?php elseif (isset($_SESSION['roll'])): ?>

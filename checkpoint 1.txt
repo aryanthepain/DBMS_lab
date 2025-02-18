@@ -2,7 +2,6 @@ dashboard_analysis
 evaluation
 exam_portal
 feedback
-manage_exam
 process_exam
 process_feedback
 process_quit_exam

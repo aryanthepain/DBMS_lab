@@ -75,12 +75,17 @@ if (isset($_POST['action'])) {
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM examiners WHERE EID = ?");
         $stmt->execute([$new_admin_eid]);
         if ($stmt->fetchColumn() == 0) {
-            // Insert new administrator.
-            $stmt = $pdo->prepare("INSERT INTO examiners (EID, name, Phone_no) VALUES (?, ?, ?)");
-            $stmt->execute([$new_admin_eid, $new_admin_name, $new_admin_phone]);
-            $stmt = $pdo->prepare("INSERT INTO examiner_password (EID, password) VALUES (?, ?)");
-            $stmt->execute([$new_admin_eid, $new_admin_password]);
-            $addAdminMsg = "New administrator added! ";
+            // check if all details are present
+            if ($new_admin_name && $new_admin_phone && $new_admin_password) {
+                // Insert new administrator.
+                $stmt = $pdo->prepare("INSERT INTO examiners (EID, name, Phone_no) VALUES (?, ?, ?)");
+                $stmt->execute([$new_admin_eid, $new_admin_name, $new_admin_phone]);
+                $stmt = $pdo->prepare("INSERT INTO examiner_password (EID, password) VALUES (?, ?)");
+                $stmt->execute([$new_admin_eid, $new_admin_password]);
+                $addAdminMsg = "New administrator added! ";
+            } else {
+                $addAdminMsg = "Fill all details! ";
+            }
         } else {
             $addAdminMsg = "Administrator already exists. ";
         }
@@ -198,7 +203,7 @@ if ($analysis_exam_id) {
         <!-- Bootstrap Tabs for different functionalities -->
         <ul class="nav nav-tabs" id="manageExamTab" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="add-question-tab" data-bs-toggle="tab" data-bs-target="#add-question" type="button" role="tab" aria-controls="add-question" aria-selected="true">Add Question</button>
+                <button class="nav-link" id="add-question-tab" data-bs-toggle="tab" data-bs-target="#add-question" type="button" role="tab" aria-controls="add-question" aria-selected="false">Add Question</button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="manage-feedback-tab" data-bs-toggle="tab" data-bs-target="#manage-feedback" type="button" role="tab" aria-controls="manage-feedback" aria-selected="false">Manage Feedback</button>
@@ -215,7 +220,7 @@ if ($analysis_exam_id) {
         </ul>
         <div class="tab-content" id="manageExamTabContent">
             <!-- Add Question Tab -->
-            <div class="tab-pane fade show active" id="add-question" role="tabpanel" aria-labelledby="add-question-tab">
+            <div class="tab-pane fade" id="add-question" role="tabpanel" aria-labelledby="add-question-tab">
                 <h3 class="mt-3">Add a New Question</h3>
                 <?php if ($addQuestionMsg) echo '<div class="alert alert-success">' . $addQuestionMsg . '</div>'; ?>
                 <form method="post" action="manage_exam.php">
@@ -321,6 +326,7 @@ if ($analysis_exam_id) {
             <!-- Add Administrator Tab -->
             <div class="tab-pane fade" id="add-admin" role="tabpanel" aria-labelledby="add-admin-tab">
                 <h3 class="mt-3">Add Administrator</h3>
+                <p class="mt-3">* Not required if adding a registered admin</p>
                 <?php if ($addAdminMsg) echo '<div class="alert alert-success">' . $addAdminMsg . '</div>'; ?>
                 <form method="post" action="manage_exam.php">
                     <input type="hidden" name="action" value="add_admin">
@@ -338,16 +344,16 @@ if ($analysis_exam_id) {
                         <input type="number" name="new_admin_eid" id="new_admin_eid" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label for="new_admin_name" class="form-label">Administrator Name</label>
-                        <input type="text" name="new_admin_name" id="new_admin_name" class="form-control" required>
+                        <label for="new_admin_name" class="form-label">Administrator Name *</label>
+                        <input type="text" name="new_admin_name" id="new_admin_name" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label for="new_admin_phone" class="form-label">Phone Number</label>
-                        <input type="text" name="new_admin_phone" id="new_admin_phone" class="form-control" required>
+                        <label for="new_admin_phone" class="form-label">Phone Number *</label>
+                        <input type="text" name="new_admin_phone" id="new_admin_phone" class="form-control">
                     </div>
                     <div class="mb-3">
-                        <label for="new_admin_password" class="form-label">Password</label>
-                        <input type="password" name="new_admin_password" id="new_admin_password" class="form-control" required>
+                        <label for="new_admin_password" class="form-label">Password *</label>
+                        <input type="password" name="new_admin_password" id="new_admin_password" class="form-control">
                     </div>
                     <button type="submit" class="btn btn-primary">Add Administrator</button>
                 </form>
@@ -369,7 +375,7 @@ if ($analysis_exam_id) {
                     </div>
                     <div class="mb-3">
                         <label for="start_time" class="form-label">Start Time (YYYY-MM-DD HH:MM:SS)</label>
-                        <input type="text" name="start_time" id="start_time" class="form-control" placeholder="e.g., 2025-02-15 10:00:00" required>
+                        <input type="datetime-local" name="start_time" id="start_time" class="form-control" required>
                     </div>
                     <div class="mb-3">
                         <label for="duration" class="form-label">Duration (minutes)</label>
@@ -387,7 +393,9 @@ if ($analysis_exam_id) {
                         <select name="analysis_exam_id" id="analysis_exam_id" class="form-select" required onchange="this.form.submit()">
                             <option value="">-- Select Exam --</option>
                             <?php foreach ($exams as $exam): ?>
-                                <option value="<?php echo $exam['Exam_ID']; ?>" <?php if ($analysis_exam_id == $exam['Exam_ID']) echo 'selected'; ?>><?php echo htmlspecialchars($exam['name']); ?></option>
+                                <option value="<?php echo $exam['Exam_ID']; ?>" <?php if ($analysis_exam_id == $exam['Exam_ID']) echo 'selected'; ?>>
+                                    <?php echo htmlspecialchars($exam['name']); ?>
+                                </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -405,6 +413,27 @@ if ($analysis_exam_id) {
     </div>
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Script to retain active tab -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Retrieve active tab from localStorage
+            var activeTab = localStorage.getItem("activeTab");
+            if (activeTab) {
+                var tabTriggerEl = document.querySelector('button[data-bs-target="' + activeTab + '"]');
+                if (tabTriggerEl) {
+                    var tab = new bootstrap.Tab(tabTriggerEl);
+                    tab.show();
+                }
+            }
+            // Save active tab on tab change
+            var triggerTabList = [].slice.call(document.querySelectorAll('button[data-bs-toggle=\"tab\"]'));
+            triggerTabList.forEach(function(triggerEl) {
+                triggerEl.addEventListener('shown.bs.tab', function(event) {
+                    localStorage.setItem("activeTab", event.target.getAttribute("data-bs-target"));
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>
