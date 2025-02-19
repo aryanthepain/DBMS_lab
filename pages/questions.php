@@ -37,13 +37,15 @@ $photoBlob = $student['photo'];
 
 // Set up the question list in session if not already set.
 if (!isset($_SESSION['question_ids'])) {
-    $stmt = $pdo->prepare("SELECT QID FROM questions q JOIN in_exam ie ON q.QID = ie.QID WHERE ie.Exam_ID = ?");
+    // Note: Use q.QID to avoid ambiguity.
+    $stmt = $pdo->prepare("SELECT q.QID FROM questions q JOIN in_exam ie ON q.QID = ie.QID WHERE ie.Exam_ID = ?");
     $stmt->execute([$examID]);
     $questionIDs = $stmt->fetchAll(PDO::FETCH_COLUMN);
     $_SESSION['question_ids'] = $questionIDs;
     $_SESSION['question_index'] = 0;
     $_SESSION['question_start_time'] = time();
 }
+
 $questionIDs = $_SESSION['question_ids'];
 $questionIndex = $_SESSION['question_index'];
 
@@ -52,7 +54,7 @@ if ($questionIndex >= count($questionIDs)) {
     unset($_SESSION['question_ids']);
     unset($_SESSION['question_index']);
     unset($_SESSION['question_start_time']);
-    header("Location: evaluation_analysis.php");
+    header("Location: evaluation.php");
     exit();
 }
 
