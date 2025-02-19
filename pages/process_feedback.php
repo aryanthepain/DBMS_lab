@@ -12,8 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $bookingID = $_POST['booking_ID'];
     $QID = $_POST['QID'];
     $feedbackText = $_POST['feedback_text'];
-    // Assuming the admin’s EID is stored in session (e.g. $_SESSION['admin_id'])
-    $EID = $_SESSION['admin_id'] ?? 0;
+    $EID = $_SESSION['eid'] ?? 0;
 
     $stmt = $pdo->prepare("INSERT INTO feedback (booking_ID, QID, EID, feedback_text) VALUES (?, ?, ?, ?)");
     $stmt->execute([$bookingID, $QID, $EID, $feedbackText]);
