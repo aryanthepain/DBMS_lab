@@ -21,7 +21,7 @@ $admin = $stmt->fetch(PDO::FETCH_ASSOC);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <style>
-        .default-admin-img {
+        .admin-photo {
             max-width: 150px;
             border-radius: 50%;
         }
@@ -34,7 +34,7 @@ $admin = $stmt->fetch(PDO::FETCH_ASSOC);
         <h2>Admin Dashboard</h2>
         <div class="row mt-3">
             <div class="col-md-3">
-                <img src="../assets/default.png" alt="Default Admin Photo" class="default-admin-img img-fluid">
+                <img src="../assets/default.png" alt="Default Admin Photo" class="admin-photo img-fluid">
             </div>
             <div class="col-md-9">
                 <h4>Your Details</h4>
@@ -45,7 +45,7 @@ $admin = $stmt->fetch(PDO::FETCH_ASSOC);
         </div>
         <hr>
         <h3>Admin Features</h3>
-        <p>Use the Manage Exam page to create exams, add questions, assign administrators, manage time slots, and review exam analysis and feedback.</p>
+        <p>Use the Manage Exam page to create exams, add questions, assign administrators, manage time slots, and review exam analysis and pending feedback.</p>
         <a href="manage_exam.php" class="btn btn-primary">Go to Manage Exam</a>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>

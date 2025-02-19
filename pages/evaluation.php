@@ -13,10 +13,15 @@ $roll = $_SESSION['roll'];
 $stmt = $pdo->prepare("SELECT booking_ID, Exam_ID FROM takes_exam WHERE Roll_number = ? AND end_time IS NOT NULL ORDER BY booking_ID DESC");
 $stmt->execute([$roll]);
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 if (empty($bookings)) {
     die("No completed exam found for evaluation.");
 }
+
+// Use selected booking if provided; otherwise, use the most recent.
 $selectedBookingID = isset($_GET['bookingID']) ? $_GET['bookingID'] : $bookings[0]['booking_ID'];
+
+// Get exam ID from the selected booking.
 $stmt = $pdo->prepare("SELECT Exam_ID FROM takes_exam WHERE booking_ID = ?");
 $stmt->execute([$selectedBookingID]);
 $examData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -24,6 +29,11 @@ if (!$examData) {
     die("Invalid booking selected.");
 }
 $examID = $examData['Exam_ID'];
+
+// Retrieve exam details.
+$stmt = $pdo->prepare("SELECT * FROM exam WHERE Exam_ID = ?");
+$stmt->execute([$examID]);
+$examDetails = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Fetch evaluation details.
 $stmt = $pdo->prepare("
@@ -57,16 +67,16 @@ foreach ($results as $row) {
 $scorePercentage = $totalQuestions > 0 ? round(($correctCount / $totalQuestions) * 100, 2) : 0;
 $avgTimePerQuestion = $totalQuestions > 0 ? round($totalTime / $totalQuestions, 2) : 0;
 
-// Additional metrics.
+// Additional analysis: number of students who took this exam.
 $stmt = $pdo->prepare("SELECT COUNT(DISTINCT Roll_number) FROM takes_exam WHERE Exam_ID = ? AND end_time IS NOT NULL");
 $stmt->execute([$examID]);
 $studentCount = $stmt->fetchColumn();
 
 $stmt = $pdo->prepare("SELECT MAX(correct_count) as highest, MIN(correct_count) as lowest FROM (
-       SELECT booking_ID, SUM(is_correct) as correct_count FROM exam_results
-       WHERE QID IN (SELECT QID FROM in_exam WHERE Exam_ID = ?)
-       GROUP BY booking_ID
-    ) sub");
+   SELECT booking_ID, SUM(is_correct) as correct_count FROM exam_results
+   WHERE QID IN (SELECT QID FROM in_exam WHERE Exam_ID = ?)
+   GROUP BY booking_ID
+) sub");
 $stmt->execute([$examID]);
 $scoreData = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -93,6 +103,19 @@ $analysisResult = [
     <?php include 'navbar.php'; ?>
     <div class="container mt-5">
         <h2>Exam Evaluation & Analysis</h2>
+        <!-- Exam Details Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                Exam Details
+            </div>
+            <div class="card-body">
+                <p><strong>Exam Name:</strong> <?php echo htmlspecialchars($examDetails['name']); ?></p>
+                <p><strong>Fees:</strong> <?php echo htmlspecialchars($examDetails['fees']); ?></p>
+                <!-- Add more exam details if available -->
+            </div>
+        </div>
+
+        <!-- Booking Selection -->
         <form method="get" action="evaluation.php">
             <div class="mb-3">
                 <label for="bookingID" class="form-label">Select Exam Booking</label>
@@ -105,6 +128,8 @@ $analysisResult = [
                 </select>
             </div>
         </form>
+
+        <!-- Evaluation Table -->
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -129,6 +154,8 @@ $analysisResult = [
                 <?php endforeach; ?>
             </tbody>
         </table>
+
+        <!-- Metrics Section -->
         <div class="mt-4">
             <h4>Metrics</h4>
             <p><strong>Score Percentage:</strong> <?php echo $analysisResult['avg_score']; ?>%</p>
