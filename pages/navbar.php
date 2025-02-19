@@ -23,7 +23,6 @@ if (session_status() == PHP_SESSION_NONE) {
                     <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
                 <?php elseif (isset($_SESSION['roll'])): ?>
                     <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="exam_registration.php">Exam Registration</a></li>
                     <li class="nav-item"><a class="nav-link" href="booking.php">Booking & Fees</a></li>
                     <li class="nav-item"><a class="nav-link" href="schedule.php">Schedule</a></li>
                     <li class="nav-item"><a class="nav-link" href="exam_portal.php">Take Exam</a></li>
