@@ -1,5 +1,5 @@
 <?php
-// File: pages/evaluation_analysis.php
+// File: pages/evaluation.php
 session_start();
 require_once '../include/dbh.inc.php';
 
@@ -9,22 +9,31 @@ if (!isset($_SESSION['roll'])) {
 }
 $roll = $_SESSION['roll'];
 
-// Retrieve all completed exam bookings for the student.
+// Retrieve all completed exam bookings for this student.
 $stmt = $pdo->prepare("SELECT booking_ID, Exam_ID FROM takes_exam WHERE Roll_number = ? AND end_time IS NOT NULL ORDER BY booking_ID DESC");
 $stmt->execute([$roll]);
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Let the student choose a booking.
-$selectedBookingID = isset($_GET['bookingID']) ? $_GET['bookingID'] : (count($bookings) > 0 ? $bookings[0]['booking_ID'] : null);
-if (!$selectedBookingID) {
+if (empty($bookings)) {
     die("No completed exam found for evaluation.");
 }
 
-// Fetch evaluation details for the selected booking.
+// If a booking is selected via GET, use that; otherwise, use the most recent.
+$selectedBookingID = isset($_GET['bookingID']) ? $_GET['bookingID'] : $bookings[0]['booking_ID'];
+// Also, get the exam ID for the selected booking.
+$stmt = $pdo->prepare("SELECT Exam_ID FROM takes_exam WHERE booking_ID = ?");
+$stmt->execute([$selectedBookingID]);
+$examData = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$examData) {
+    die("Invalid booking selected.");
+}
+$examID = $examData['Exam_ID'];
+
+// Fetch evaluation details.
 $stmt = $pdo->prepare("
     SELECT er.QID, q.question, er.selected_option, er.is_correct, 
            TIMESTAMPDIFF(SECOND, er.start_time, er.end_time) AS time_spent,
-           f.feedback_text, q.difficulty
+           IFNULL(f.feedback_text, '') AS feedback_text, q.difficulty
     FROM exam_results er
     JOIN questions q ON er.QID = q.QID
     LEFT JOIN feedback f ON er.booking_ID = f.booking_ID AND er.QID = f.QID
@@ -43,16 +52,21 @@ foreach ($results as $row) {
         $correctCount++;
     }
     $totalTime += $row['time_spent'];
-    $difficulty = $row['difficulty'];
-    if (!isset($difficultyCounts[$difficulty])) {
-        $difficultyCounts[$difficulty] = 0;
+    $diff = $row['difficulty'];
+    if (!isset($difficultyCounts[$diff])) {
+        $difficultyCounts[$diff] = 0;
     }
-    $difficultyCounts[$difficulty]++;
+    $difficultyCounts[$diff]++;
 }
 $scorePercentage = $totalQuestions > 0 ? round(($correctCount / $totalQuestions) * 100, 2) : 0;
 $avgTimePerQuestion = $totalQuestions > 0 ? round($totalTime / $totalQuestions, 2) : 0;
 
-// For demonstration, calculate percentile among all completed exams.
+// Additional analysis: number of students who took this exam.
+$stmt = $pdo->prepare("SELECT COUNT(DISTINCT Roll_number) FROM takes_exam WHERE Exam_ID = ? AND end_time IS NOT NULL");
+$stmt->execute([$examID]);
+$studentCount = $stmt->fetchColumn();
+
+// For demonstration: percentile calculation.
 $stmt = $pdo->query("SELECT COUNT(*) FROM takes_exam WHERE end_time IS NOT NULL");
 $totalExams = $stmt->fetchColumn();
 $stmt = $pdo->prepare("SELECT COUNT(*) FROM takes_exam 
@@ -73,11 +87,11 @@ $percentile = $totalExams > 0 ? round(($examsAbove / $totalExams) * 100, 2) : 0;
 </head>
 
 <body>
-    <?php require 'navbar.php'; ?>
+    <?php include 'navbar.php'; ?>
     <div class="container mt-5">
         <h2>Exam Evaluation & Analysis</h2>
         <!-- Booking selection -->
-        <form method="get" action="evaluation_analysis.php">
+        <form method="get" action="evaluation.php">
             <div class="mb-3">
                 <label for="bookingID" class="form-label">Select Exam Booking</label>
                 <select name="bookingID" id="bookingID" class="form-select" onchange="this.form.submit()">
@@ -108,7 +122,7 @@ $percentile = $totalExams > 0 ? round(($examsAbove / $totalExams) * 100, 2) : 0;
                         <td><?php echo htmlspecialchars($row['QID']); ?></td>
                         <td><?php echo htmlspecialchars($row['question']); ?></td>
                         <td><?php echo htmlspecialchars($row['selected_option']); ?></td>
-                        <td><?php echo ($row['is_correct']) ? "Yes" : "No"; ?></td>
+                        <td><?php echo $row['is_correct'] ? "Yes" : "No"; ?></td>
                         <td><?php echo htmlspecialchars($row['time_spent']); ?></td>
                         <td><?php echo htmlspecialchars($row['feedback_text']); ?></td>
                     </tr>
@@ -122,6 +136,7 @@ $percentile = $totalExams > 0 ? round(($examsAbove / $totalExams) * 100, 2) : 0;
             <p><strong>Score Percentage:</strong> <?php echo $scorePercentage; ?>%</p>
             <p><strong>Average Time per Question:</strong> <?php echo $avgTimePerQuestion; ?> sec</p>
             <p><strong>Percentile:</strong> <?php echo $percentile; ?>%</p>
+            <p><strong>Number of Students Who Took This Exam:</strong> <?php echo $studentCount; ?></p>
             <h5>Difficulty Breakdown:</h5>
             <?php foreach ($difficultyCounts as $level => $count): ?>
                 <p>Difficulty <?php echo $level; ?>: <?php echo $count; ?> question(s)</p>
