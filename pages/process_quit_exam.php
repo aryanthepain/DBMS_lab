@@ -1,4 +1,5 @@
 <?php
+// author: aryanthepain
 // File: pages/process_quit_exam.php
 session_start();
 require_once '../include/dbh.inc.php';
@@ -16,8 +17,8 @@ $stmt->execute([$bookingID]);
 
 // Clear exam-related session variables (so they can resume later, if desired)
 unset($_SESSION['booking_ID']);
-unset($_SESSION['current_difficulty']);
-unset($_SESSION['question_count']);
+unset($_SESSION['exam']);
+unset($_SESSION['question_index']);
 
 // Redirect to the student dashboard with a message.
 $_SESSION['message'] = "Exam session saved. You may resume your exam later.";

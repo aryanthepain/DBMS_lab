@@ -1,4 +1,6 @@
 <?php
+// author: aryanthepain
+// file: pages/logout.php
 // Start the session
 session_start();
 

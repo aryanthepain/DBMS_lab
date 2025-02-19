@@ -1,14 +1,15 @@
 <?php
+// author: aryanthepain
 // File: pages/process_exam.php
 session_start();
 require_once '../include/dbh.inc.php';
 
-if (!isset($_SESSION['roll'], $_SESSION['booking_ID'], $_SESSION['exam_id'])) {
+if (!isset($_SESSION['roll'], $_SESSION['booking_ID'], $_SESSION['exam_ID'])) {
     header("Location: login.php");
     exit();
 }
 $bookingID = $_SESSION['booking_ID'];
-$examID = $_SESSION['exam_id'];
+$examID = $_SESSION['exam_ID'];
 $roll = $_SESSION['roll'];
 
 // Expecting answers as an associative array: questions[QID][selected_option]

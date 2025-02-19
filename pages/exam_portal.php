@@ -1,4 +1,5 @@
 <?php
+// author: aryanthepain
 // File: pages/exam_portal.php
 session_start();
 require_once '../include/dbh.inc.php';
@@ -40,11 +41,12 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
     <?php include 'navbar.php'; ?>
+
     <div class="container mt-5 text-center">
         <h2>Exam Portal</h2>
         <p class="exam-instructions">
-            Please read the instructions carefully before starting your exam.
-            Once you press the "Start Exam" button, your exam will begin.
+            Please read the instructions carefully before starting your exam.<br>
+            Once you press the "Start Exam" button, your exam will begin.<br>
             Please upload a photo for exam verification.
         </p>
         <?php if (empty($bookings)) : ?>

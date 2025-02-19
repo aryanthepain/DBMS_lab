@@ -1,3 +1,5 @@
+-- author: aryanthepain
+
 CREATE TABLE
     students (
         Roll_number BIGINT PRIMARY key auto_increment NOT NULL,

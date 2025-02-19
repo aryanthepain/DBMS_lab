@@ -1,9 +1,10 @@
 <?php
+// author: aryanthepain
 // File: pages/process_exam_question.php
 session_start();
 require_once '../include/dbh.inc.php';
 
-if (!isset($_SESSION['roll'], $_SESSION['booking_ID'], $_SESSION['exam_id'], $_SESSION['question_ids'])) {
+if (!isset($_SESSION['roll'], $_SESSION['booking_ID'], $_SESSION['exam_ID'], $_SESSION['question_ids'])) {
     header("Location: login.php");
     exit();
 }

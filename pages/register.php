@@ -1,4 +1,6 @@
 <?php
+// author: aryanthepain
+// file: pages/register.php
 require_once '../include/dbh.inc.php';
 
 $message = "";

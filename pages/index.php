@@ -1,3 +1,6 @@
+<!-- author: aryanthepain -->
+<!-- file: pages/index.php -->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -9,7 +12,7 @@
     <link rel="stylesheet" href="../css/style.css">
     <style>
         .hero {
-            background: url('../images/hero-bg.jpg') no-repeat center center;
+            background: url('../assets/hero.jpg') no-repeat center center;
             background-size: cover;
             color: #fff;
             padding: 100px 0;
@@ -51,6 +54,7 @@
 
 <body>
     <?php include 'navbar.php'; ?>
+
     <div class="hero">
         <div class="container">
             <h1 class="display-4">Welcome to the Exam Portal</h1>

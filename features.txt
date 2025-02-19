@@ -1,0 +1,20 @@
+index page with feature list
+registration page
+login page
+admin login page
+navigation bar
+logout
+
+student side
+- dashboard with important links and info
+- book an exam and add transaction details
+- schedule an exam
+- take exam
+- quit in between and come back to same exam
+- view results and evaluations
+- see admin's feedback
+
+admin side
+- admin login
+- admin registration can only be done by an admin
+- dashboard with admin details and manage exam link

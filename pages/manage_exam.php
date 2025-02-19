@@ -1,4 +1,5 @@
 <?php
+// author: aryanthepain
 // File: pages/manage_exam.php
 session_start();
 if (!isset($_SESSION['admin'])) {
@@ -16,15 +17,137 @@ $addAdminMsg    = "";
 $timeslotMsg    = "";
 $analysisResult = [];
 
-// Process Form Submissions...
-// (Same processing code as before, without the Booking ID field in the Time Slot section)
+// -------------------------
+// Process Form Submissions
+// -------------------------
+if (isset($_POST['action'])) {
+    $action = $_POST['action'];
+    // (A) Create Exam.
+    if ($action === 'create_exam') {
+        $exam_name = $_POST['exam_name'];
+        $fees      = $_POST['fees'];
+        $stmt = $pdo->prepare("INSERT INTO exam (name, fees) VALUES (?, ?)");
+        if ($stmt->execute([$exam_name, $fees])) {
+            $new_exam_id = $pdo->lastInsertId();
+            // Assign current admin to the newly created exam.
+            $stmt = $pdo->prepare("INSERT INTO administered_by (EID, Exam_ID) VALUES (?, ?)");
+            if ($stmt->execute([$admin_id, $new_exam_id])) {
+                $createExamMsg = "Exam created and assigned successfully!";
+            } else {
+                $createExamMsg = "Exam created, but assignment failed.";
+            }
+        } else {
+            $createExamMsg = "Exam creation failed.";
+        }
+    }
+    // (B) Add Question.
+    elseif ($action === 'add_question') {
+        $exam_id       = $_POST['exam_id'];
+        $question_text = $_POST['question_text'];
+        $difficulty    = $_POST['difficulty'];
+        $option1       = $_POST['option1'];
+        $option2       = $_POST['option2'];
+        $option3       = $_POST['option3'];
+        $option4       = $_POST['option4'];
+        $correct_option = $_POST['correct_option'];
+        $stmt = $pdo->prepare("INSERT INTO questions (question, difficulty, option1, option2, option3, option4, correct_option) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        if ($stmt->execute([$question_text, $difficulty, $option1, $option2, $option3, $option4, $correct_option])) {
+            $new_qid = $pdo->lastInsertId();
+            $stmt = $pdo->prepare("INSERT INTO in_exam (QID, Exam_ID) VALUES (?, ?)");
+            if ($stmt->execute([$new_qid, $exam_id])) {
+                $addQuestionMsg = "Question added successfully!";
+            } else {
+                $addQuestionMsg = "Question added but failed to link with exam.";
+            }
+        } else {
+            $addQuestionMsg = "Failed to add question.";
+        }
+    }
+    // (C) Submit Feedback.
+    elseif ($action === 'submit_feedback') {
+        $booking_id      = $_POST['booking_id']; // The booking ID for the selected student/exam.
+        $feedbackEntries = $_POST['feedback'];    // Associative array: feedback[QID] => text.
+        foreach ($feedbackEntries as $qid => $feedback_text) {
+            if (trim($feedback_text) !== "") {
+                $stmt = $pdo->prepare("SELECT COUNT(*) FROM feedback WHERE booking_ID = ? AND QID = ?");
+                $stmt->execute([$booking_id, $qid]);
+                if ($stmt->fetchColumn() == 0) {
+                    $stmt = $pdo->prepare("INSERT INTO feedback (booking_ID, QID, EID, feedback_text) VALUES (?, ?, ?, ?)");
+                    $stmt->execute([$booking_id, $qid, $admin_id, $feedback_text]);
+                }
+            }
+        }
+        $feedbackMsg = "Feedback submitted successfully!";
+    }
+    // (D) Add Administrator.
+    elseif ($action === 'add_admin') {
+        $exam_id            = $_POST['exam_id'];
+        $new_admin_eid      = $_POST['new_admin_eid'];
+        $new_admin_name     = $_POST['new_admin_name'];
+        $new_admin_phone    = $_POST['new_admin_phone'];
+        $new_admin_password = $_POST['new_admin_password'];
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM examiners WHERE EID = ?");
+        $stmt->execute([$new_admin_eid]);
+        if ($stmt->fetchColumn() == 0) {
+            if ($new_admin_name && $new_admin_phone && $new_admin_password) {
+                $stmt = $pdo->prepare("INSERT INTO examiners (EID, name, Phone_no) VALUES (?, ?, ?)");
+                $stmt->execute([$new_admin_eid, $new_admin_name, $new_admin_phone]);
+                $stmt = $pdo->prepare("INSERT INTO examiner_password (EID, password) VALUES (?, ?)");
+                $stmt->execute([$new_admin_eid, $new_admin_password]);
+                $addAdminMsg = "New administrator added! ";
+            } else {
+                $addAdminMsg = "Fill all details! ";
+            }
+        } else {
+            $addAdminMsg = "Administrator already exists. ";
+        }
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM administered_by WHERE EID = ? AND Exam_ID = ?");
+        $stmt->execute([$new_admin_eid, $exam_id]);
+        if ($stmt->fetchColumn() == 0) {
+            $stmt = $pdo->prepare("INSERT INTO administered_by (EID, Exam_ID) VALUES (?, ?)");
+            $stmt->execute([$new_admin_eid, $exam_id]);
+            $addAdminMsg .= "Administrator assigned to exam successfully.";
+        } else {
+            $addAdminMsg .= "Administrator is already assigned to this exam.";
+        }
+    }
+    // (E) Add/Manage Time Slot.
+    elseif ($action === 'add_timeslot') {
+        $exam_id = $_POST['exam_id'];
+        $timeslot_choice = $_POST['timeslot_choice']; // 'existing' or 'new'
+        if ($timeslot_choice === 'existing') {
+            $selected_slot_id = $_POST['existing_slot'];
+            $stmt = $pdo->prepare("UPDATE takes_exam SET slot_ID = ? WHERE booking_ID = ?");
+            if ($stmt->execute([$selected_slot_id, $_POST['bookingID'] ?? null])) {
+                $timeslotMsg = "Time slot updated successfully!";
+            } else {
+                $timeslotMsg = "Failed to update time slot.";
+            }
+        } else { // new slot.
+            $start_time = $_POST['start_time'];
+            $duration = $_POST['duration'];
+            $stmt = $pdo->prepare("INSERT INTO slot (start_time, duration) VALUES (?, ?)");
+            if ($stmt->execute([$start_time, $duration])) {
+                $slot_id = $pdo->lastInsertId();
+                $stmt = $pdo->prepare("INSERT INTO available_on_slot (slot_ID, Exam_ID) VALUES (?, ?)");
+                if ($stmt->execute([$slot_id, $exam_id])) {
+                    $timeslotMsg = "New time slot created and assigned successfully!";
+                } else {
+                    $timeslotMsg = "Time slot created, but failed to link with exam.";
+                }
+            } else {
+                $timeslotMsg = "Failed to create new time slot.";
+            }
+        }
+    }
+}
 
 // Prepare Data for Display.
 $stmt = $pdo->prepare("SELECT e.Exam_ID, e.name, e.fees FROM exam e JOIN administered_by ab ON e.Exam_ID = ab.Exam_ID WHERE ab.EID = ?");
 $stmt->execute([$admin_id]);
 $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// For Feedback: (same as before)
+// For Feedback: 
 $selected_exam_id = isset($_GET['exam_id']) ? $_GET['exam_id'] : "";
 $selected_student_id = isset($_GET['student_id']) ? $_GET['student_id'] : "";
 $feedback_data = [];
@@ -116,7 +239,6 @@ if ($analysis_exam_id) {
     <?php include 'navbar.php'; ?>
     <div class="container mt-5">
         <h2>Manage Exam</h2>
-        <!-- Optional: If an exam is selected for analysis, show exam details -->
         <?php if ($analysis_exam_id && $examDetails): ?>
             <div class="card mb-4">
                 <div class="card-header">
@@ -125,7 +247,6 @@ if ($analysis_exam_id) {
                 <div class="card-body">
                     <p><strong>Exam Name:</strong> <?php echo htmlspecialchars($examDetails['name']); ?></p>
                     <p><strong>Fees:</strong> <?php echo htmlspecialchars($examDetails['fees']); ?></p>
-                    <!-- Add additional exam details as needed -->
                 </div>
             </div>
         <?php endif; ?>
