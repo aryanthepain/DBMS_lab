@@ -42,7 +42,7 @@ unset($_SESSION['question_start_time']);
 if ($_SESSION['question_index'] >= count($_SESSION['question_ids'])) {
     unset($_SESSION['question_ids']);
     unset($_SESSION['question_index']);
-    header("Location: evaluation_analysis.php");
+    header("Location: evaluation.php");
     exit();
 } else {
     header("Location: questions.php");
