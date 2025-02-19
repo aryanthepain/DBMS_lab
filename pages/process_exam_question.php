@@ -19,7 +19,7 @@ $questionStartTime = $_POST['question_start_time'];
 $questionEndTime = time();
 $timeSpent = $questionEndTime - $questionStartTime;
 
-// Retrieve correct option.
+// Retrieve correct answer.
 $stmt = $pdo->prepare("SELECT correct_option FROM questions WHERE QID = ?");
 $stmt->execute([$QID]);
 $question = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -34,7 +34,6 @@ $stmt = $pdo->prepare("INSERT INTO exam_results (booking_ID, QID, selected_optio
 $stmt->execute([$bookingID, $QID, $selectedOption, $isCorrect, $questionStartTime, $questionEndTime]);
 
 $_SESSION['question_index']++;
-
 if ($_SESSION['question_index'] >= count($_SESSION['question_ids'])) {
     // Update exam finish time.
     $stmt = $pdo->prepare("UPDATE takes_exam SET end_time = NOW() WHERE booking_ID = ?");

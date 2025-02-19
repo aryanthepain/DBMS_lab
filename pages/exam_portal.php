@@ -9,7 +9,7 @@ if (!isset($_SESSION['roll'])) {
 }
 $roll = $_SESSION['roll'];
 
-// Query available exam bookings for this student (only active ones).
+// Only show active (not completed) exam bookings.
 $stmt = $pdo->prepare("
     SELECT t.booking_ID, e.Exam_ID, e.name AS exam_name, s.start_time, s.duration 
     FROM takes_exam t 
@@ -52,7 +52,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <strong>No exam booking available.</strong> Please book an exam slot and try again.
             </div>
         <?php else : ?>
-            <!-- Exam Booking Selection -->
             <div class="mb-3">
                 <label for="booking_ID" class="form-label">Select Exam to Start</label>
                 <select name="booking_ID" id="booking_ID" class="form-select">
@@ -72,7 +71,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <input type="file" name="photo" id="photo" accept="image/*" class="form-control">
                 <small class="form-text text-muted">If no photo is uploaded, a default image will be used.</small>
             </div>
-            <!-- Start Exam Form -->
             <form id="startExamForm" action="process_exam_start.php" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="booking_ID" id="selected_booking_ID">
                 <input type="hidden" name="exam_ID" id="selected_exam_ID">
