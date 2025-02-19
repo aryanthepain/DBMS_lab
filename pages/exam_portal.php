@@ -57,7 +57,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <label for="booking_ID" class="form-label">Select Exam to Start</label>
                 <select name="booking_ID" id="booking_ID" class="form-select">
                     <?php foreach ($bookings as $booking):
-                        // Format start time nicely.
                         $startDateTime = (new DateTime($booking['start_time']))->format("Y-m-d H:i:s");
                     ?>
                         <option value="<?php echo htmlspecialchars($booking['booking_ID']); ?>"
@@ -75,7 +74,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
             <!-- Start Exam Form -->
             <form id="startExamForm" action="process_exam_start.php" method="post" enctype="multipart/form-data">
-                <!-- Hidden fields for selected booking and exam ID -->
                 <input type="hidden" name="booking_ID" id="selected_booking_ID">
                 <input type="hidden" name="exam_ID" id="selected_exam_ID">
                 <button type="submit" id="startExamBtn" class="btn btn-success btn-lg">Start Exam</button>
@@ -83,7 +81,6 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php endif; ?>
     </div>
     <script>
-        // When the exam is started, set the selected booking and exam id in hidden inputs.
         document.getElementById('startExamForm').addEventListener('submit', function(e) {
             const bookingSelect = document.getElementById('booking_ID');
             const selectedOption = bookingSelect.options[bookingSelect.selectedIndex];

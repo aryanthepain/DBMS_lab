@@ -37,7 +37,6 @@ $photoBlob = $student['photo'];
 
 // Set up the question list in session if not already set.
 if (!isset($_SESSION['question_ids'])) {
-    // Note: Use q.QID to avoid ambiguity.
     $stmt = $pdo->prepare("SELECT q.QID FROM questions q JOIN in_exam ie ON q.QID = ie.QID WHERE ie.Exam_ID = ?");
     $stmt->execute([$examID]);
     $questionIDs = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -45,7 +44,6 @@ if (!isset($_SESSION['question_ids'])) {
     $_SESSION['question_index'] = 0;
     $_SESSION['question_start_time'] = time();
 }
-
 $questionIDs = $_SESSION['question_ids'];
 $questionIndex = $_SESSION['question_index'];
 
@@ -63,8 +61,9 @@ $currentQID = $questionIDs[$questionIndex];
 $stmt = $pdo->prepare("SELECT * FROM questions WHERE QID = ?");
 $stmt->execute([$currentQID]);
 $question = $stmt->fetch(PDO::FETCH_ASSOC);
-
-// Set the start time for this question if not already set.
+if (!$question) {
+    die("Question not found.");
+}
 if (!isset($_SESSION['question_start_time'])) {
     $_SESSION['question_start_time'] = time();
 }
@@ -98,7 +97,7 @@ $questionStartTime = $_SESSION['question_start_time'];
         function updateTimer() {
             if (remaining <= 0) {
                 clearInterval(timerInterval);
-                document.getElementById('examForm').submit(); // auto-submit when time runs out.
+                document.getElementById('examForm').submit(); // Auto-submit exam if time expires.
             } else {
                 let hrs = Math.floor(remaining / 3600);
                 let mins = Math.floor((remaining % 3600) / 60);
