@@ -5,7 +5,7 @@ if (!isset($_SESSION['admin'])) {
     header("Location: admin_login.php");
     exit();
 }
-require_once '../include/dbh.inc.php';
+require_once '../include/dbh.inc.php'; // Assumes $pdo is a valid PDO connection.
 $admin_id = $_SESSION['eid'];
 
 // Initialize messages.
@@ -16,16 +16,19 @@ $addAdminMsg    = "";
 $timeslotMsg    = "";
 $analysisResult = [];
 
-// Process Form Submissions.
+// -------------------------
+// Process Form Submissions
+// -------------------------
 if (isset($_POST['action'])) {
     $action = $_POST['action'];
     // (A) Create Exam.
     if ($action === 'create_exam') {
         $exam_name = $_POST['exam_name'];
-        $fees = $_POST['fees'];
+        $fees      = $_POST['fees'];
         $stmt = $pdo->prepare("INSERT INTO exam (name, fees) VALUES (?, ?)");
         if ($stmt->execute([$exam_name, $fees])) {
             $new_exam_id = $pdo->lastInsertId();
+            // Assign current admin to the newly created exam.
             $stmt = $pdo->prepare("INSERT INTO administered_by (EID, Exam_ID) VALUES (?, ?)");
             if ($stmt->execute([$admin_id, $new_exam_id])) {
                 $createExamMsg = "Exam created and assigned successfully!";
@@ -38,13 +41,13 @@ if (isset($_POST['action'])) {
     }
     // (B) Add Question.
     elseif ($action === 'add_question') {
-        $exam_id = $_POST['exam_id'];
+        $exam_id       = $_POST['exam_id'];
         $question_text = $_POST['question_text'];
-        $difficulty = $_POST['difficulty'];
-        $option1 = $_POST['option1'];
-        $option2 = $_POST['option2'];
-        $option3 = $_POST['option3'];
-        $option4 = $_POST['option4'];
+        $difficulty    = $_POST['difficulty'];
+        $option1       = $_POST['option1'];
+        $option2       = $_POST['option2'];
+        $option3       = $_POST['option3'];
+        $option4       = $_POST['option4'];
         $correct_option = $_POST['correct_option'];
         $stmt = $pdo->prepare("INSERT INTO questions (question, difficulty, option1, option2, option3, option4, correct_option) VALUES (?, ?, ?, ?, ?, ?, ?)");
         if ($stmt->execute([$question_text, $difficulty, $option1, $option2, $option3, $option4, $correct_option])) {
@@ -61,8 +64,8 @@ if (isset($_POST['action'])) {
     }
     // (C) Submit Feedback.
     elseif ($action === 'submit_feedback') {
-        $booking_id = $_POST['booking_id'];
-        $feedbackEntries = $_POST['feedback'];
+        $booking_id      = $_POST['booking_id']; // The booking ID for the selected student/exam.
+        $feedbackEntries = $_POST['feedback'];    // Associative array: feedback[QID] => text.
         foreach ($feedbackEntries as $qid => $feedback_text) {
             if (trim($feedback_text) !== "") {
                 $stmt = $pdo->prepare("SELECT COUNT(*) FROM feedback WHERE booking_ID = ? AND QID = ?");
@@ -77,10 +80,10 @@ if (isset($_POST['action'])) {
     }
     // (D) Add Administrator.
     elseif ($action === 'add_admin') {
-        $exam_id = $_POST['exam_id'];
-        $new_admin_eid = $_POST['new_admin_eid'];
-        $new_admin_name = $_POST['new_admin_name'];
-        $new_admin_phone = $_POST['new_admin_phone'];
+        $exam_id            = $_POST['exam_id'];
+        $new_admin_eid      = $_POST['new_admin_eid'];
+        $new_admin_name     = $_POST['new_admin_name'];
+        $new_admin_phone    = $_POST['new_admin_phone'];
         $new_admin_password = $_POST['new_admin_password'];
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM examiners WHERE EID = ?");
         $stmt->execute([$new_admin_eid]);
@@ -107,19 +110,19 @@ if (isset($_POST['action'])) {
             $addAdminMsg .= "Administrator is already assigned to this exam.";
         }
     }
-    // (E) Add/Choose Time Slot.
+    // (E) Add/Manage Time Slot.
     elseif ($action === 'add_timeslot') {
         $exam_id = $_POST['exam_id'];
-        $timeslot_choice = $_POST['timeslot_choice']; // either 'existing' or 'new'
+        $timeslot_choice = $_POST['timeslot_choice']; // 'existing' or 'new'
         if ($timeslot_choice === 'existing') {
             $selected_slot_id = $_POST['existing_slot'];
             $stmt = $pdo->prepare("UPDATE takes_exam SET slot_ID = ? WHERE booking_ID = ?");
-            if ($stmt->execute([$selected_slot_id, $_POST['bookingID']])) {
+            if ($stmt->execute([$selected_slot_id, $_POST['bookingID'] ?? null])) {
                 $timeslotMsg = "Time slot updated successfully!";
             } else {
                 $timeslotMsg = "Failed to update time slot.";
             }
-        } else { // new slot
+        } else { // new slot.
             $start_time = $_POST['start_time'];
             $duration = $_POST['duration'];
             $stmt = $pdo->prepare("INSERT INTO slot (start_time, duration) VALUES (?, ?)");
@@ -127,11 +130,6 @@ if (isset($_POST['action'])) {
                 $slot_id = $pdo->lastInsertId();
                 $stmt = $pdo->prepare("INSERT INTO available_on_slot (slot_ID, Exam_ID) VALUES (?, ?)");
                 if ($stmt->execute([$slot_id, $exam_id])) {
-                    // Also update the booking if provided.
-                    if (isset($_POST['bookingID']) && !empty($_POST['bookingID'])) {
-                        $stmt = $pdo->prepare("UPDATE takes_exam SET slot_ID = ? WHERE booking_ID = ?");
-                        $stmt->execute([$slot_id, $_POST['bookingID']]);
-                    }
                     $timeslotMsg = "New time slot created and assigned successfully!";
                 } else {
                     $timeslotMsg = "Time slot created, but failed to link with exam.";
@@ -146,14 +144,11 @@ if (isset($_POST['action'])) {
 // -------------------------
 // Prepare Data for Display
 // -------------------------
-
-// Get list of exams administered by this admin.
 $stmt = $pdo->prepare("SELECT e.Exam_ID, e.name FROM exam e JOIN administered_by ab ON e.Exam_ID = ab.Exam_ID WHERE ab.EID = ?");
 $stmt->execute([$admin_id]);
 $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// For Feedback: Only show students with pending feedback.
-// Query for students who have at least one exam_result with no feedback for a given exam.
+// For Feedback: only show students with pending feedback.
 $selected_exam_id = isset($_GET['exam_id']) ? $_GET['exam_id'] : "";
 $selected_student_id = isset($_GET['student_id']) ? $_GET['student_id'] : "";
 $feedback_data = [];
@@ -174,10 +169,9 @@ if ($selected_exam_id && $selected_student_id) {
     }
 }
 
-// For Feedback: get the list of students (only those with pending feedback) for a selected exam.
+// For Feedback: list of students with pending feedback.
 $students_in_exam = [];
 if ($selected_exam_id) {
-    // Only include students who have a booking with pending feedback.
     $stmt = $pdo->prepare("
         SELECT DISTINCT s.Roll_number, s.name 
         FROM students s
@@ -193,7 +187,6 @@ if ($selected_exam_id) {
 // For Exam Analysis: additional metrics.
 $analysis_exam_id = isset($_GET['analysis_exam_id']) ? $_GET['analysis_exam_id'] : "";
 if ($analysis_exam_id) {
-    // Average score.
     $stmt = $pdo->prepare("SELECT AVG(correct_count) as avg_score FROM (
        SELECT booking_ID, SUM(is_correct) as correct_count FROM exam_results
        WHERE QID IN (SELECT QID FROM in_exam WHERE Exam_ID = ?)
@@ -202,17 +195,14 @@ if ($analysis_exam_id) {
     $stmt->execute([$analysis_exam_id]);
     $avg_score = $stmt->fetchColumn();
 
-    // Average time per question.
     $stmt = $pdo->prepare("SELECT AVG(TIMESTAMPDIFF(SECOND, start_time, end_time)) as avg_time FROM exam_results WHERE QID IN (SELECT QID FROM in_exam WHERE Exam_ID = ?)");
     $stmt->execute([$analysis_exam_id]);
     $avg_time = $stmt->fetchColumn();
 
-    // Number of students who took this exam.
     $stmt = $pdo->prepare("SELECT COUNT(DISTINCT Roll_number) FROM takes_exam WHERE Exam_ID = ? AND end_time IS NOT NULL");
     $stmt->execute([$analysis_exam_id]);
     $studentCount = $stmt->fetchColumn();
 
-    // Highest and lowest scores.
     $stmt = $pdo->prepare("SELECT MAX(correct_count) as highest, MIN(correct_count) as lowest FROM (
        SELECT booking_ID, SUM(is_correct) as correct_count FROM exam_results
        WHERE QID IN (SELECT QID FROM in_exam WHERE Exam_ID = ?)
@@ -244,7 +234,6 @@ if ($analysis_exam_id) {
     <?php include 'navbar.php'; ?>
     <div class="container mt-5">
         <h2>Manage Exam</h2>
-        <!-- Bootstrap Tabs -->
         <ul class="nav nav-tabs" id="manageExamTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="create-exam-tab" data-bs-toggle="tab" data-bs-target="#create-exam" type="button" role="tab" aria-controls="create-exam" aria-selected="false">Create Exam</button>
@@ -324,7 +313,6 @@ if ($analysis_exam_id) {
             <div class="tab-pane fade" id="manage-feedback" role="tabpanel" aria-labelledby="manage-feedback-tab">
                 <h3 class="mt-3">Manage Feedback</h3>
                 <?php if ($feedbackMsg) echo '<div class="alert alert-success">' . $feedbackMsg . '</div>'; ?>
-                <!-- Select Exam for Feedback -->
                 <form method="get" action="manage_exam.php">
                     <div class="mb-3">
                         <label for="exam_id_feedback" class="form-label">Select Exam</label>
@@ -339,7 +327,6 @@ if ($analysis_exam_id) {
                     </div>
                 </form>
                 <?php if ($selected_exam_id): ?>
-                    <!-- Dropdown for students with pending feedback -->
                     <form method="get" action="manage_exam.php">
                         <input type="hidden" name="exam_id" value="<?php echo $selected_exam_id; ?>">
                         <div class="mb-3">
@@ -447,7 +434,7 @@ if ($analysis_exam_id) {
                     <div id="existingSlotDiv" class="mb-3">
                         <label for="existing_slot" class="form-label">Select Existing Time Slot</label>
                         <?php
-                        // For demonstration, fetch all time slots (you can filter by exam if desired)
+                        // Fetch all time slots.
                         $stmt = $pdo->query("SELECT slot_ID, start_time, duration FROM slot ORDER BY start_time ASC");
                         $timeSlots = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         ?>
@@ -465,11 +452,6 @@ if ($analysis_exam_id) {
                         <input type="datetime-local" name="start_time" id="start_time" class="form-control">
                         <label for="duration" class="form-label mt-2">Duration (minutes)</label>
                         <input type="number" name="duration" id="duration" class="form-control" min="1">
-                    </div>
-                    <!-- Optional: include bookingID to update existing booking -->
-                    <div class="mb-3">
-                        <label for="bookingID" class="form-label">(Optional) Booking ID to assign slot</label>
-                        <input type="number" name="bookingID" id="bookingID" class="form-control">
                     </div>
                     <button type="submit" class="btn btn-primary">Submit Time Slot</button>
                 </form>
@@ -503,8 +485,8 @@ if ($analysis_exam_id) {
                 </form>
                 <?php if ($analysis_exam_id && !empty($analysisResult)): ?>
                     <div class="alert alert-info">
-                        <p><strong>Average Score:</strong> <?php echo $analysisResult['avg_score']; ?></p>
-                        <p><strong>Average Time per Question:</strong> <?php echo $analysisResult['avg_time']; ?> seconds</p>
+                        <p><strong>Average Score:</strong> <?php echo $analysisResult['avg_score']; ?>%</p>
+                        <p><strong>Average Time per Question:</strong> <?php echo $analysisResult['avg_time']; ?> sec</p>
                         <p><strong>Number of Students Who Took Exam:</strong> <?php echo $analysisResult['studentCount']; ?></p>
                         <p><strong>Highest Score:</strong> <?php echo $analysisResult['highest_score']; ?></p>
                         <p><strong>Lowest Score:</strong> <?php echo $analysisResult['lowest_score']; ?></p>
@@ -515,9 +497,7 @@ if ($analysis_exam_id) {
             </div>
         </div>
     </div>
-    <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Script to retain active tab -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             var activeTab = localStorage.getItem("activeTab");
