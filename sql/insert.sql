@@ -1,3 +1,4 @@
+-- author: aryanthepain
 -- Insert students
 INSERT INTO
     students (Roll_number, name, photo, Phone_no)

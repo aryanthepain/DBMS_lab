@@ -1,4 +1,5 @@
 <?php
+// author: aryanthepain
 // File: pages/admin_dashboard.php
 session_start();
 if (!isset($_SESSION['admin'])) {
@@ -30,6 +31,7 @@ $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
 <body>
     <?php include 'navbar.php'; ?>
+
     <div class="container mt-5">
         <h2>Admin Dashboard</h2>
         <div class="row mt-3">

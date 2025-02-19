@@ -1,15 +1,16 @@
 <?php
+// author: aryanthepain
 // File: pages/questions.php
 session_start();
 require_once '../include/dbh.inc.php';
 
-if (!isset($_SESSION['roll'], $_SESSION['booking_ID'], $_SESSION['exam_id'])) {
+if (!isset($_SESSION['roll'], $_SESSION['booking_ID'], $_SESSION['exam_ID'])) {
     header("Location: login.php");
     exit();
 }
 $roll = $_SESSION['roll'];
 $bookingID = $_SESSION['booking_ID'];
-$examID = $_SESSION['exam_id'];
+$examID = $_SESSION['exam_ID'];
 
 // Retrieve exam slot info to calculate exam end time.
 $stmt = $pdo->prepare("SELECT s.start_time, s.duration FROM slot s JOIN takes_exam t ON s.slot_ID = t.slot_ID WHERE t.booking_ID = ?");

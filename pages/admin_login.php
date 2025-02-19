@@ -1,4 +1,6 @@
 <?php
+// author: aryanthepain
+// file: pages/admin_login.php
 require_once '../include/dbh.inc.php';
 session_start();
 

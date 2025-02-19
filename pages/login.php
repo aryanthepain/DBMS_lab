@@ -1,4 +1,6 @@
 <?php
+// author: aryanthepain
+// file: pages/login.php
 require_once '../include/dbh.inc.php';
 
 $message = "";
@@ -46,6 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <body class="bg-light">
     <?php include 'navbar.php'; ?>
+
     <div class="container p-5 d-flex flex-column align-items-center">
         <?php if ($message): ?>
             <div class="toast align-items-center text-white <?php echo $toastClass; ?> border-0" role="alert" aria-live="assertive" aria-atomic="true">

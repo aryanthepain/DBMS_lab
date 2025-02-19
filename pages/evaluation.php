@@ -1,4 +1,5 @@
 <?php
+// author: aryanthepain
 // File: pages/evaluation.php
 session_start();
 require_once '../include/dbh.inc.php';
@@ -111,7 +112,6 @@ $analysisResult = [
             <div class="card-body">
                 <p><strong>Exam Name:</strong> <?php echo htmlspecialchars($examDetails['name']); ?></p>
                 <p><strong>Fees:</strong> <?php echo htmlspecialchars($examDetails['fees']); ?></p>
-                <!-- Add more exam details if available -->
             </div>
         </div>
 

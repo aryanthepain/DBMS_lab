@@ -1,4 +1,5 @@
 <?php
+// author: aryanthepain
 // file:page/schedule.php
 session_start();
 require_once '../include/dbh.inc.php';
@@ -28,7 +29,7 @@ if (isset($_GET['bookingID'])) {
     $examID = $booking['Exam_ID'];
     $currentSlotID = $booking['slot_ID'];
 
-    // Retrieve exam details (optional, for display)
+    // Retrieve exam details
     $stmt = $pdo->prepare("SELECT name FROM exam WHERE Exam_ID = :examID");
     $stmt->bindParam(':examID', $examID, PDO::PARAM_INT);
     $stmt->execute();

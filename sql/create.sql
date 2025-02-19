@@ -1,3 +1,4 @@
+-- author: aryanthepain
 -- student table
 CREATE TABLE
     students (

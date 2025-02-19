@@ -1,3 +1,5 @@
+-- author: aryanthepain
+
 -- b
 INSERT INTO
     students (name, photo, Phone_no)
