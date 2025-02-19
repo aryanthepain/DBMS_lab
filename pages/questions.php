@@ -11,7 +11,7 @@ $roll = $_SESSION['roll'];
 $bookingID = $_SESSION['booking_ID'];
 $examID = $_SESSION['exam_id'];
 
-// Retrieve exam slot info.
+// Retrieve exam slot info to calculate exam end time.
 $stmt = $pdo->prepare("SELECT s.start_time, s.duration FROM slot s JOIN takes_exam t ON s.slot_ID = t.slot_ID WHERE t.booking_ID = ?");
 $stmt->execute([$bookingID]);
 $slot = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -29,13 +29,10 @@ if ($remainingSeconds < 0) {
     exit();
 }
 
-// Retrieve student's photo.
-$stmt = $pdo->prepare("SELECT photo FROM students WHERE Roll_number = ?");
-$stmt->execute([$roll]);
-$student = $stmt->fetch(PDO::FETCH_ASSOC);
-$photoBlob = $student['photo'];
+// Use default photo (do not fetch from DB).
+$defaultPhotoPath = '../assets/default.png';
 
-// Set up question list if not set.
+// Set up the question list in session if not already set.
 if (!isset($_SESSION['question_ids'])) {
     $stmt = $pdo->prepare("SELECT q.QID FROM questions q JOIN in_exam ie ON q.QID = ie.QID WHERE ie.Exam_ID = ?");
     $stmt->execute([$examID]);
@@ -46,13 +43,11 @@ if (!isset($_SESSION['question_ids'])) {
 }
 $questionIDs = $_SESSION['question_ids'];
 $questionIndex = $_SESSION['question_index'];
-
 if ($questionIndex >= count($questionIDs)) {
     unset($_SESSION['question_ids'], $_SESSION['question_index'], $_SESSION['question_start_time']);
     header("Location: evaluation.php");
     exit();
 }
-
 $currentQID = $questionIDs[$questionIndex];
 $stmt = $pdo->prepare("SELECT * FROM questions WHERE QID = ?");
 $stmt->execute([$currentQID]);
@@ -87,12 +82,13 @@ $questionStartTime = $_SESSION['question_start_time'];
         }
     </style>
     <script>
+        // Overall exam countdown timer.
         let remaining = <?php echo $remainingSeconds; ?>;
 
         function updateTimer() {
             if (remaining <= 0) {
                 clearInterval(timerInterval);
-                document.getElementById('examForm').submit();
+                document.getElementById('examForm').submit(); // Auto-submit exam if time expires.
             } else {
                 let hrs = Math.floor(remaining / 3600);
                 let mins = Math.floor((remaining % 3600) / 60);
@@ -112,13 +108,11 @@ $questionStartTime = $_SESSION['question_start_time'];
     <?php include 'navbar.php'; ?>
     <div class="container mt-5">
         <h2>Exam Question <?php echo $questionIndex + 1; ?> of <?php echo count($questionIDs); ?></h2>
+        <!-- Display default student photo -->
         <div class="mb-3">
-            <?php if (!empty($photoBlob)): ?>
-                <img src="data:image/png;base64,<?php echo base64_encode($photoBlob); ?>" alt="Student Photo" class="student-photo">
-            <?php else: ?>
-                <img src="path/to/default.png" alt="Default Photo" class="student-photo">
-            <?php endif; ?>
+            <img src="<?php echo $defaultPhotoPath; ?>" alt="Default Photo" class="student-photo">
         </div>
+        <!-- Countdown Timer -->
         <div class="mb-3">
             <h4>Time Remaining: <span id="countdownTimer">00:00:00</span></h4>
         </div>
