@@ -9,14 +9,13 @@ if (!isset($_SESSION['roll'])) {
 }
 $roll = $_SESSION['roll'];
 
-// Query available exam bookings for this student.
-// (Here we assume an exam booking is “active” if its end_time is NULL or still in the future.)
+// Query available exam bookings for this student (only active ones).
 $stmt = $pdo->prepare("
-    SELECT t.booking_ID, e.name AS exam_name, s.start_time, s.duration 
+    SELECT t.booking_ID, e.Exam_ID, e.name AS exam_name, s.start_time, s.duration 
     FROM takes_exam t 
     JOIN exam e ON t.Exam_ID = e.Exam_ID 
     JOIN slot s ON t.slot_ID = s.slot_ID 
-    WHERE t.Roll_number = ? AND (t.end_time IS NULL OR t.end_time > NOW())
+    WHERE t.Roll_number = ? AND t.end_time IS NULL
     ORDER BY s.start_time
 ");
 $stmt->execute([$roll]);
@@ -32,20 +31,9 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <style>
-        #timer {
-            font-size: 2rem;
-            font-weight: bold;
-        }
-
         .exam-instructions {
             font-size: 1.1rem;
             margin-bottom: 30px;
-        }
-
-        video,
-        canvas {
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -56,10 +44,9 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <h2>Exam Portal</h2>
         <p class="exam-instructions">
             Please read the instructions carefully before starting your exam.
-            Once you press the "Start Exam" button, your exam timer will begin.
-            A snapshot of your ID will be captured for verification.
+            Once you press the "Start Exam" button, your exam will begin.
+            Please upload a photo for exam verification.
         </p>
-
         <?php if (empty($bookings)) : ?>
             <div class="alert alert-warning">
                 <strong>No exam booking available.</strong> Please book an exam slot and try again.
@@ -73,84 +60,35 @@ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         // Format start time nicely.
                         $startDateTime = (new DateTime($booking['start_time']))->format("Y-m-d H:i:s");
                     ?>
-                        <option value="<?php echo htmlspecialchars($booking['booking_ID']); ?>">
+                        <option value="<?php echo htmlspecialchars($booking['booking_ID']); ?>"
+                            data-examid="<?php echo htmlspecialchars($booking['Exam_ID']); ?>">
                             <?php echo htmlspecialchars($booking['exam_name'] . " (Slot: " . $startDateTime . ", Duration: " . $booking['duration'] . " mins)"); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
             </div>
-
-            <!-- Exam Timer -->
+            <!-- Photo Upload -->
             <div class="mb-3">
-                <h4>Exam Timer: <span id="timer">00:00:00</span></h4>
+                <label for="photo" class="form-label">Upload Your Photo</label>
+                <input type="file" name="photo" id="photo" accept="image/*" class="form-control">
+                <small class="form-text text-muted">If no photo is uploaded, a default image will be used.</small>
             </div>
-
-            <!-- Video and Canvas for Photo Capture -->
-            <div class="mb-3">
-                <video id="video" width="320" height="240" autoplay></video>
-                <canvas id="canvas" width="320" height="240" style="display: none;"></canvas>
-            </div>
-
             <!-- Start Exam Form -->
-            <form id="startExamForm" action="process_exam_start.php" method="post">
-                <!-- Hidden input to store captured photo data -->
-                <input type="hidden" name="captured_photo" id="captured_photo">
-                <!-- Hidden field to send the selected exam booking -->
+            <form id="startExamForm" action="process_exam_start.php" method="post" enctype="multipart/form-data">
+                <!-- Hidden fields for selected booking and exam ID -->
                 <input type="hidden" name="booking_ID" id="selected_booking_ID">
+                <input type="hidden" name="exam_ID" id="selected_exam_ID">
                 <button type="submit" id="startExamBtn" class="btn btn-success btn-lg">Start Exam</button>
             </form>
         <?php endif; ?>
     </div>
-
     <script>
-        // Timer (counts up; actual exam time is controlled later on the questions page)
-        let seconds = 0;
-
-        function updateTimer() {
-            seconds++;
-            let hrs = Math.floor(seconds / 3600);
-            let mins = Math.floor((seconds % 3600) / 60);
-            let secs = seconds % 60;
-            document.getElementById('timer').innerText =
-                String(hrs).padStart(2, '0') + ":" +
-                String(mins).padStart(2, '0') + ":" +
-                String(secs).padStart(2, '0');
-        }
-        setInterval(updateTimer, 1000);
-
-        // Access the webcam
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const capturedPhotoInput = document.getElementById('captured_photo');
-
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({
-                video: true
-            }).then(function(stream) {
-                video.srcObject = stream;
-                video.play();
-            }).catch(function(error) {
-                console.log("Camera error:", error);
-                // If no camera access, assign a flag ("random") to trigger a fallback.
-                capturedPhotoInput.value = 'random';
-            });
-        } else {
-            capturedPhotoInput.value = 'random';
-        }
-
-        // When the exam is started, capture the photo and include the selected exam booking.
+        // When the exam is started, set the selected booking and exam id in hidden inputs.
         document.getElementById('startExamForm').addEventListener('submit', function(e) {
-            // Set the selected booking ID from the dropdown.
-            const selectedBooking = document.getElementById('booking_ID').value;
-            document.getElementById('selected_booking_ID').value = selectedBooking;
-            // If the camera is available, capture an image.
-            if (capturedPhotoInput.value !== 'random') {
-                let context = canvas.getContext('2d');
-                context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                let dataURL = canvas.toDataURL('image/png');
-                capturedPhotoInput.value = dataURL;
-            }
-            // Optionally, you can stop the video stream here.
+            const bookingSelect = document.getElementById('booking_ID');
+            const selectedOption = bookingSelect.options[bookingSelect.selectedIndex];
+            document.getElementById('selected_booking_ID').value = selectedOption.value;
+            document.getElementById('selected_exam_ID').value = selectedOption.getAttribute('data-examid');
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
