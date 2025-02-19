@@ -9,18 +9,14 @@ if (!isset($_SESSION['roll'])) {
 }
 $roll = $_SESSION['roll'];
 
-// Retrieve all completed exam bookings for this student.
+// Retrieve completed exam bookings for this student.
 $stmt = $pdo->prepare("SELECT booking_ID, Exam_ID FROM takes_exam WHERE Roll_number = ? AND end_time IS NOT NULL ORDER BY booking_ID DESC");
 $stmt->execute([$roll]);
 $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 if (empty($bookings)) {
     die("No completed exam found for evaluation.");
 }
-
-// If a booking is selected via GET, use that; otherwise, use the most recent.
 $selectedBookingID = isset($_GET['bookingID']) ? $_GET['bookingID'] : $bookings[0]['booking_ID'];
-// Also, get the exam ID for the selected booking.
 $stmt = $pdo->prepare("SELECT Exam_ID FROM takes_exam WHERE booking_ID = ?");
 $stmt->execute([$selectedBookingID]);
 $examData = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -61,19 +57,26 @@ foreach ($results as $row) {
 $scorePercentage = $totalQuestions > 0 ? round(($correctCount / $totalQuestions) * 100, 2) : 0;
 $avgTimePerQuestion = $totalQuestions > 0 ? round($totalTime / $totalQuestions, 2) : 0;
 
-// Additional analysis: number of students who took this exam.
+// Additional metrics.
 $stmt = $pdo->prepare("SELECT COUNT(DISTINCT Roll_number) FROM takes_exam WHERE Exam_ID = ? AND end_time IS NOT NULL");
 $stmt->execute([$examID]);
 $studentCount = $stmt->fetchColumn();
 
-// For demonstration: percentile calculation.
-$stmt = $pdo->query("SELECT COUNT(*) FROM takes_exam WHERE end_time IS NOT NULL");
-$totalExams = $stmt->fetchColumn();
-$stmt = $pdo->prepare("SELECT COUNT(*) FROM takes_exam 
-                       WHERE (SELECT COUNT(*) FROM exam_results er WHERE er.booking_ID = takes_exam.booking_ID AND er.is_correct = 1) >= ?");
-$stmt->execute([$correctCount]);
-$examsAbove = $stmt->fetchColumn();
-$percentile = $totalExams > 0 ? round(($examsAbove / $totalExams) * 100, 2) : 0;
+$stmt = $pdo->prepare("SELECT MAX(correct_count) as highest, MIN(correct_count) as lowest FROM (
+       SELECT booking_ID, SUM(is_correct) as correct_count FROM exam_results
+       WHERE QID IN (SELECT QID FROM in_exam WHERE Exam_ID = ?)
+       GROUP BY booking_ID
+    ) sub");
+$stmt->execute([$examID]);
+$scoreData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$analysisResult = [
+    'avg_score' => round($scorePercentage, 2),
+    'avg_time' => $avgTimePerQuestion,
+    'studentCount' => $studentCount,
+    'highest_score' => $scoreData['highest'] ?? 0,
+    'lowest_score' => $scoreData['lowest'] ?? 0
+];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -90,7 +93,6 @@ $percentile = $totalExams > 0 ? round(($examsAbove / $totalExams) * 100, 2) : 0;
     <?php include 'navbar.php'; ?>
     <div class="container mt-5">
         <h2>Exam Evaluation & Analysis</h2>
-        <!-- Booking selection -->
         <form method="get" action="evaluation.php">
             <div class="mb-3">
                 <label for="bookingID" class="form-label">Select Exam Booking</label>
@@ -103,8 +105,6 @@ $percentile = $totalExams > 0 ? round(($examsAbove / $totalExams) * 100, 2) : 0;
                 </select>
             </div>
         </form>
-
-        <!-- Evaluation Table -->
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -122,21 +122,20 @@ $percentile = $totalExams > 0 ? round(($examsAbove / $totalExams) * 100, 2) : 0;
                         <td><?php echo htmlspecialchars($row['QID']); ?></td>
                         <td><?php echo htmlspecialchars($row['question']); ?></td>
                         <td><?php echo htmlspecialchars($row['selected_option']); ?></td>
-                        <td><?php echo $row['is_correct'] ? "Yes" : "No"; ?></td>
+                        <td><?php echo ($row['is_correct']) ? "Yes" : "No"; ?></td>
                         <td><?php echo htmlspecialchars($row['time_spent']); ?></td>
                         <td><?php echo htmlspecialchars($row['feedback_text']); ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
         </table>
-
-        <!-- Metrics -->
         <div class="mt-4">
             <h4>Metrics</h4>
-            <p><strong>Score Percentage:</strong> <?php echo $scorePercentage; ?>%</p>
-            <p><strong>Average Time per Question:</strong> <?php echo $avgTimePerQuestion; ?> sec</p>
-            <p><strong>Percentile:</strong> <?php echo $percentile; ?>%</p>
-            <p><strong>Number of Students Who Took This Exam:</strong> <?php echo $studentCount; ?></p>
+            <p><strong>Score Percentage:</strong> <?php echo $analysisResult['avg_score']; ?>%</p>
+            <p><strong>Average Time per Question:</strong> <?php echo $analysisResult['avg_time']; ?> sec</p>
+            <p><strong>Number of Students Who Took This Exam:</strong> <?php echo $analysisResult['studentCount']; ?></p>
+            <p><strong>Highest Score:</strong> <?php echo $analysisResult['highest_score']; ?></p>
+            <p><strong>Lowest Score:</strong> <?php echo $analysisResult['lowest_score']; ?></p>
             <h5>Difficulty Breakdown:</h5>
             <?php foreach ($difficultyCounts as $level => $count): ?>
                 <p>Difficulty <?php echo $level; ?>: <?php echo $count; ?> question(s)</p>
