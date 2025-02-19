@@ -73,7 +73,7 @@ $percentile = $totalExams > 0 ? round(($examsAbove / $totalExams) * 100, 2) : 0;
 </head>
 
 <body>
-    <?php include 'navbar.php'; ?>
+    <?php require 'navbar.php'; ?>
     <div class="container mt-5">
         <h2>Exam Evaluation & Analysis</h2>
         <!-- Booking selection -->
