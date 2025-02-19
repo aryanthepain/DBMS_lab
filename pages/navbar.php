@@ -15,11 +15,7 @@ if (session_status() == PHP_SESSION_NONE) {
                 <!-- <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li> -->
                 <?php if (isset($_SESSION['admin'])): ?>
                     <li class="nav-item"><a class="nav-link" href="admin_dashboard.php">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="exam_registration.php">Exam Registration</a></li>
-                    <li class="nav-item"><a class="nav-link" href="create_timeslot.php">Create Time Slot</a></li>
-                    <li class="nav-item"><a class="nav-link" href="book_exam_slot.php">Book Exam Slot</a></li>
                     <li class="nav-item"><a class="nav-link" href="manage_exam.php">Manage Exam</a></li>
-                    <li class="nav-item"><a class="nav-link" href="dashboard_analysis.php">Exam Analysis</a></li>
                     <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
                 <?php elseif (isset($_SESSION['roll'])): ?>
                     <li class="nav-item"><a class="nav-link" href="dashboard.php">Dashboard</a></li>
@@ -27,7 +23,6 @@ if (session_status() == PHP_SESSION_NONE) {
                     <li class="nav-item"><a class="nav-link" href="schedule.php">Schedule</a></li>
                     <li class="nav-item"><a class="nav-link" href="exam_portal.php">Take Exam</a></li>
                     <li class="nav-item"><a class="nav-link" href="evaluation.php">Evaluation</a></li>
-                    <li class="nav-item"><a class="nav-link" href="dashboard_analysis.php">Exam Analysis</a></li>
                     <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
                 <?php else: ?>
                     <li class="nav-item"><a class="nav-link" href="register.php">Register</a></li>
