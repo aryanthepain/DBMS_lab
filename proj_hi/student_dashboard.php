@@ -12,7 +12,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 require_once 'dbh.inc.php'; // This file creates a PDO connection stored in $pdo
 
-// Ensure the student is logged in
+// If the student is not logged in, redirect to login
 if (!isset($_SESSION['student_id'])) {
   header("Location: index.php");
   exit();
@@ -27,7 +27,7 @@ $stmtStudent->execute([$student_id]);
 $studentData = $stmtStudent->fetch(PDO::FETCH_ASSOC);
 $student_name = $studentData ? $studentData['Name'] : "Student";
 
-// Fetch all available courses
+// Fetch all available courses (for listing all courses)
 $sqlCourses = "SELECT * FROM Courses";
 $stmtCourses = $pdo->query($sqlCourses);
 $courses = $stmtCourses->fetchAll(PDO::FETCH_ASSOC);
@@ -50,6 +50,7 @@ $stmtReg = $pdo->prepare($sqlReg);
 $stmtReg->execute([$student_id]);
 $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -59,20 +60,18 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
   <title>Student Dashboard - eLearn</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    /* New Colour Scheme */
     :root {
-      --primary: #4361ee;
-      --primary-light: #4895ef;
-      --dark: #222831;
-      --text-dark: #333;
-      --text-light: #717171;
-      --bg-light: #f9fafb;
+      --primary: #008080;
+      /* Teal */
+      --primary-light: #66c2c2;
+      --dark: #0a3d62;
+      --text-dark: #0a3d62;
+      --text-light: #778899;
+      --bg-light: #e6f2f0;
       --bg-white: #ffffff;
       --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      --green: #10b981;
-      --blue: #3b82f6;
-      --orange: #f59e0b;
-      --red: #ef4444;
       --radius: 8px;
     }
 
@@ -112,17 +111,30 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
       height: 70px;
     }
 
-    .logo {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--primary);
+    /* Revised user info: Place avatar and username on the left */
+    .user-info {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .logo i {
-      font-size: 28px;
+    .user-avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background-color: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg-white);
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .user-name {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--dark);
     }
 
     .nav-menu {
@@ -160,44 +172,12 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
       background-color: var(--primary);
     }
 
-    .user-menu {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: var(--primary-light);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    .user-name {
-      font-weight: 500;
-    }
-
     .logout-btn {
       background-color: transparent;
       border: 1px solid #e2e8f0;
       border-radius: var(--radius);
       padding: 8px 16px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
       transition: all 0.3s;
       color: var(--text-dark);
       font-weight: 500;
@@ -236,124 +216,62 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
       font-size: 16px;
     }
 
-    /* Course Cards */
-    .course-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 25px;
+    /* Available Courses List (instead of grid) */
+    .course-list {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
     }
 
-    .course-card {
+    .course-list-item {
       background: var(--bg-white);
+      border: 1px solid #ddd;
       border-radius: var(--radius);
-      overflow: hidden;
       box-shadow: var(--shadow);
-      transition: transform 0.3s, box-shadow 0.3s;
-      cursor: pointer;
-      position: relative;
-    }
-
-    .course-card:hover {
-      transform: translateY(-5px);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .course-banner {
-      height: 140px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 60px;
-    }
-
-    .course-category {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background-color: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 50px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-
-    .course-content {
-      padding: 25px;
-    }
-
-    .course-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: var(--dark);
-      line-height: 1.4;
-    }
-
-    .course-meta {
+      padding: 15px;
+      margin-bottom: 15px;
       display: flex;
       align-items: center;
       gap: 15px;
-      margin-bottom: 15px;
-    }
-
-    .course-instructor {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      color: var(--text-light);
-    }
-
-    .course-credits {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-      color: var(--text-light);
-    }
-
-    .course-description {
-      font-size: 14px;
-      color: var(--text-light);
-      margin-bottom: 20px;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      line-height: 1.5;
-    }
-
-    .course-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .view-details-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 8px 16px;
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: var(--radius);
-      font-weight: 500;
-      cursor: pointer;
       transition: background-color 0.3s;
-      text-decoration: none;
-      font-size: 14px;
+      cursor: pointer;
     }
 
-    .view-details-btn:hover {
-      background-color: var(--primary-light);
+    .course-list-item:hover {
+      background-color: #f1f5f9;
     }
 
-    .course-date {
+    .course-icon {
+      background: var(--primary);
+      color: var(--bg-white);
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .course-info {
+      flex-grow: 1;
+    }
+
+    .course-info h3 {
+      font-size: 20px;
+      margin-bottom: 5px;
+      color: var(--dark);
+    }
+
+    .course-info p {
       font-size: 14px;
+      color: var(--text-light);
+      margin-bottom: 5px;
+    }
+
+    .course-meta {
+      font-size: 13px;
       color: var(--text-light);
     }
 
@@ -421,16 +339,8 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
       color: #1e40af;
     }
 
-    /* Responsive */
+    /* Responsive adjustments */
     @media (max-width: 768px) {
-      .course-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .course-details {
-        grid-template-columns: 1fr;
-      }
-
       .nav-menu {
         gap: 15px;
       }
@@ -443,22 +353,6 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
         font-size: 22px;
       }
     }
-
-    .status-label {
-      display: inline-block;
-      padding: 6px 12px;
-      font-weight: bold;
-      border-radius: 5px;
-      color: white;
-    }
-
-    .status-label.in-progress {
-      background-color: #f39c12;
-    }
-
-    .status-label.completed {
-      background-color: #27ae60;
-    }
   </style>
 </head>
 
@@ -467,9 +361,12 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
   <header class="header">
     <div class="container">
       <nav class="navbar">
-        <div class="logo">
-          <i class="fas fa-graduation-cap"></i>
-          <span><?php echo htmlspecialchars($student_name); ?></span>
+        <!-- Revised: Place user info (avatar and name) on the left -->
+        <div class="user-info">
+          <div class="user-avatar">
+            <?php echo strtoupper(substr($student_name, 0, 2)); ?>
+          </div>
+          <span class="user-name"><?php echo htmlspecialchars($student_name); ?></span>
         </div>
         <ul class="nav-menu">
           <li class="nav-item">
@@ -479,13 +376,7 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
             <a href="#my-courses" class="nav-link" data-tab="my-courses">My Courses</a>
           </li>
         </ul>
-        <div class="user-menu">
-          <div class="user-info">
-            <div class="user-avatar"><?php echo strtoupper(substr($student_name, 0, 2)); ?></div>
-            <span class="user-name"><?php echo htmlspecialchars($student_name); ?></span>
-          </div>
-        </div>
-        <div class="logout-container" style="position: absolute; top: 20px; right: 20px;">
+        <div class="logout-container" style="position: relative;">
           <form action="logout.php" method="post">
             <button type="submit" class="logout-btn">Logout</button>
           </form>
@@ -493,14 +384,15 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
       </nav>
     </div>
   </header>
-  <!-- Available Courses Tab -->
+
+  <!-- Available Courses Tab (List View) -->
   <div class="main-content active" id="available-courses">
     <div class="container">
       <div class="page-header">
         <h1 class="page-title">Available Courses</h1>
         <p class="page-subtitle">Explore courses available for registration</p>
       </div>
-      <div class="course-grid">
+      <ul class="course-list">
         <?php
         if (!empty($courses)) {
           foreach ($courses as $course) {
@@ -513,64 +405,51 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
             $description  = (strlen($description) > 150) ? substr($description, 0, 150) . '...' : $description;
             $eta          = htmlspecialchars($course['EstimatedTimeOfCompletion']);
 
-            // Fetch instructor name for the course
-            $instructorQuery = "SELECT Name FROM Instructors WHERE ID = ?";
-            $stmtInst = $pdo->prepare($instructorQuery);
+            // Fetch instructor name
+            $stmtInst = $pdo->prepare("SELECT Name FROM Instructors WHERE ID = ?");
             $stmtInst->execute([$instructor_id]);
             $instData = $stmtInst->fetch(PDO::FETCH_ASSOC);
             $instructor_name = $instData ? htmlspecialchars($instData['Name']) : 'Unknown Instructor';
 
-            // Check if the student is registered for the course
-            $status = null;
+            // Check registration status (avoid passing null into strtolower)
+            $statusValue = isset($course['StatusOfCompletion']) ? strtolower($course['StatusOfCompletion']) : "";
             $checkStmt = $pdo->prepare("SELECT StatusOfCompletion FROM CourseRegistration WHERE CourseID = ? AND StudentID = ?");
             $checkStmt->execute([$course_id, $student_id]);
             $checkData = $checkStmt->fetch(PDO::FETCH_ASSOC);
-            if ($checkData) {
-              $status = $checkData['StatusOfCompletion'];
-            }
+            $status = $checkData ? $checkData['StatusOfCompletion'] : null;
         ?>
-            <div class="course-card" data-course-id="<?php echo $course_id; ?>">
-              <div class="course-banner">
-                <i class="fas fa-laptop-code"></i>
-                <span class="course-category"><?php echo $category; ?></span>
+            <li class="course-list-item" onclick="window.location.href='fees.php?course_id=<?php echo $course_id; ?>&student_id=<?php echo $student_id; ?>'">
+              <div class="course-icon">
+                <i class="fas fa-book-open"></i>
               </div>
-              <div class="course-content">
-                <h3 class="course-title"><?php echo $course_name; ?></h3>
+              <div class="course-info">
+                <h3><?php echo $course_name; ?></h3>
+                <p><?php echo $description; ?></p>
                 <div class="course-meta">
-                  <div class="course-instructor">
-                    <i class="fas fa-user"></i>
-                    <span><?php echo $instructor_name; ?></span>
-                  </div>
-                  <div class="course-credits">
-                    <i class="fas fa-award"></i>
-                    <span><?php echo $price; ?></span>
-                  </div>
+                  <span>Instructor: <?php echo $instructor_name; ?></span> |
+                  <span>Price: <?php echo $price; ?></span> |
+                  <span>Time: <?php echo $eta; ?></span>
                 </div>
-                <p class="course-description"><?php echo $description; ?></p>
-                <div class="course-footer">
-                  <?php
-                  if ($status === null) {
-                    echo "<a href='fees.php?course_id={$course_id}&student_id={$student_id}' class='view-details-btn'><i class='fas fa-info-circle'></i> <span>Register</span></a>";
-                  } else {
-                    $statusClass = (strtolower($status) == 'completed') ? 'status-label completed' : 'status-label in-progress';
-                    echo "<span class='{$statusClass}'><i class='fas fa-check-circle'></i> {$status}</span>";
-                  }
-                  ?>
-                  <div class="Time">
-                    <i class="far fa-calendar-alt"></i> Time <?php echo $eta; ?>
-                  </div>
-                </div>
+                <?php
+                if ($status === null) {
+                  echo "<p style='margin-top:8px; color: var(--primary);'><i class='fas fa-info-circle'></i> Not Registered</p>";
+                } else {
+                  $statusClass = (strtolower($status) == 'completed') ? 'status-complete' : 'status-progress';
+                  echo "<p style='margin-top:8px;' class='status-badge {$statusClass}'><i class='fas fa-check-circle'></i> {$status}</p>";
+                }
+                ?>
               </div>
-            </div>
+            </li>
         <?php
           }
         } else {
           echo "<p>No available courses found.</p>";
         }
         ?>
-      </div>
+      </ul>
     </div>
   </div>
+
   <!-- My Courses Tab -->
   <div class="main-content" id="my-courses">
     <div class="container">
@@ -593,7 +472,8 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
             <?php
             if (!empty($registeredCourses)) {
               foreach ($registeredCourses as $reg) {
-                $status_class = (mb_strtolower($reg['StatusOfCompletion']) == 'completed') ? 'status-complete' : ((mb_strtolower($reg['StatusOfCompletion']) == 'in progress') ? 'status-progress' : 'status-pending');
+                $statusText = isset($reg['StatusOfCompletion']) ? $reg['StatusOfCompletion'] : "Unknown";
+                $status_class = (strtolower($statusText) == 'completed') ? 'status-complete' : ((strtolower($statusText) == 'in progress') ? 'status-progress' : 'status-pending');
                 echo "
                         <tr onclick=\"window.location.href='stud_view_course.php?course_id={$reg['CourseID']}&student_id={$student_id}'\" style=\"cursor:pointer;\">
                           <td class='course-code'>{$reg['CourseID']}</td>
@@ -613,6 +493,7 @@ $registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
       </div>
     </div>
   </div>
+
   <!-- JavaScript for Tab Navigation -->
   <script>
     const navLinks = document.querySelectorAll('.nav-link');
