@@ -1,60 +1,62 @@
 <?php
+
+/**
+ * File: student_dashboard.php
+ * Author: Aryan Gupta
+ *
+ * Student dashboard for eLearn using a PDO connection.
+ */
+
 session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+require_once 'dbh.inc.php'; // This file creates a PDO connection stored in $pdo
 
-$host = "localhost";
-$user = "root";
-$password = "";
-$db = "DA215_Project2";
-
-$conn = new mysqli($host, $user, $password, $db);
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
+// Ensure the student is logged in
+if (!isset($_SESSION['student_id'])) {
+  header("Location: index.php");
+  exit();
 }
 
 $student_id = $_SESSION['student_id'];
 
+// Fetch student details
+$sqlStudent = "SELECT * FROM Students WHERE ID = ?";
+$stmtStudent = $pdo->prepare($sqlStudent);
+$stmtStudent->execute([$student_id]);
+$studentData = $stmtStudent->fetch(PDO::FETCH_ASSOC);
+$student_name = $studentData ? $studentData['Name'] : "Student";
 
-$sql00 = "SELECT * FROM Students WHERE ID='$student_id'";
-$res00 = $conn->query($sql00);
-$row00 = $res00->fetch_assoc();
-$student_name = $row00['Name'];
+// Fetch all available courses
+$sqlCourses = "SELECT * FROM Courses";
+$stmtCourses = $pdo->query($sqlCourses);
+$courses = $stmtCourses->fetchAll(PDO::FETCH_ASSOC);
 
-$sql = "SELECT * FROM Courses"; // Modify if you need to add any filters (e.g., only active courses)
-$result = $conn->query($sql);
-
-
-
-// SQL to get registered courses
-$sql1 = "
-              SELECT 
-                cr.CourseID,
-                c.Name AS CourseName,
-                c.InstructorID,
-                cr.DateOfRegistration,
-                cr.StatusOfCompletion,
-                i.Name AS InstructorName
-              FROM CourseRegistration cr
-              JOIN Courses c ON cr.CourseID = c.ID
-              JOIN Instructors i ON c.InstructorID = i.ID
-              WHERE cr.StudentID = ?
-            ";
-
-$stmt1 = $conn->prepare($sql1);
-$stmt1->bind_param("s", $student_id);
-$stmt1->execute();
-$result1 = $stmt1->get_result();
-
+// Fetch registered courses for this student
+$sqlReg = "
+    SELECT 
+      cr.CourseID,
+      c.Name AS CourseName,
+      c.InstructorID,
+      cr.DateOfRegistration,
+      cr.StatusOfCompletion,
+      i.Name AS InstructorName
+    FROM CourseRegistration cr
+    JOIN Courses c ON cr.CourseID = c.ID
+    JOIN Instructors i ON c.InstructorID = i.ID
+    WHERE cr.StudentID = ?
+";
+$stmtReg = $pdo->prepare($sqlReg);
+$stmtReg->execute([$student_id]);
+$registeredCourses = $stmtReg->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Dashboard</title>
+  <title>Student Dashboard - eLearn</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
@@ -319,8 +321,6 @@ $result1 = $stmt1->get_result();
       font-size: 14px;
       color: var(--text-light);
       margin-bottom: 20px;
-      /*display: -webkit-box;
-      -webkit-line-clamp: 3;*/
       -webkit-box-orient: vertical;
       overflow: hidden;
       line-height: 1.5;
@@ -357,7 +357,7 @@ $result1 = $stmt1->get_result();
       color: var(--text-light);
     }
 
-    /* My Courses Table */
+    /* Registered Courses Table */
     .course-table-container {
       background: var(--bg-white);
       border-radius: var(--radius);
@@ -411,7 +411,7 @@ $result1 = $stmt1->get_result();
       font-weight: 500;
     }
 
-    .status-completed {
+    .status-complete {
       background-color: #dcfce7;
       color: #166534;
     }
@@ -419,174 +419,6 @@ $result1 = $stmt1->get_result();
     .status-progress {
       background-color: #dbeafe;
       color: #1e40af;
-    }
-
-    /* Course Details Modal */
-    .modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(5px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s;
-    }
-
-    .modal.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .modal-content {
-      background: var(--bg-white);
-      width: 700px;
-      max-width: 90%;
-      border-radius: var(--radius);
-      overflow: hidden;
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .modal-header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-      color: white;
-      padding: 20px 30px;
-      position: relative;
-    }
-
-    .modal-title {
-      font-size: 22px;
-      font-weight: 600;
-    }
-
-    .modal-subtitle {
-      opacity: 0.8;
-      margin-top: 5px;
-      font-size: 15px;
-    }
-
-    .close-modal {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
-      color: white;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .close-modal:hover {
-      background: rgba(255, 255, 255, 0.4);
-    }
-
-    .modal-body {
-      padding: 30px;
-      overflow-y: auto;
-    }
-
-    .course-details {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
-      margin-bottom: 25px;
-    }
-
-    .course-detail-item {
-      margin-bottom: 5px;
-    }
-
-    .detail-label {
-      font-weight: 600;
-      color: var(--text-dark);
-      font-size: 14px;
-      margin-bottom: 5px;
-      display: block;
-    }
-
-    .detail-value {
-      color: var(--text-light);
-      font-size: 15px;
-    }
-
-    .course-full-description {
-      margin-top: 20px;
-    }
-
-    .course-full-description h4 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: var(--dark);
-    }
-
-    .course-full-description p {
-      color: var(--text-light);
-      line-height: 1.6;
-      margin-bottom: 15px;
-    }
-
-    .modal-footer {
-      padding: 20px 30px;
-      border-top: 1px solid #f1f5f9;
-      display: flex;
-      justify-content: flex-end;
-    }
-
-    .register-course-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: var(--radius);
-      font-weight: 500;
-      cursor: pointer;
-      transition: background-color 0.3s;
-      font-size: 15px;
-    }
-
-    .register-course-btn:hover {
-      background-color: var(--primary-light);
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 50px 20px;
-    }
-
-    .empty-state i {
-      font-size: 50px;
-      color: #cbd5e1;
-      margin-bottom: 20px;
-    }
-
-    .empty-state h3 {
-      font-size: 20px;
-      color: var(--text-dark);
-      margin-bottom: 10px;
-    }
-
-    .empty-state p {
-      color: var(--text-light);
-      max-width: 400px;
-      margin: 0 auto;
     }
 
     /* Responsive */
@@ -622,12 +454,10 @@ $result1 = $stmt1->get_result();
 
     .status-label.in-progress {
       background-color: #f39c12;
-      /* orange */
     }
 
     .status-label.completed {
       background-color: #27ae60;
-      /* green */
     }
   </style>
 </head>
@@ -635,14 +465,12 @@ $result1 = $stmt1->get_result();
 <body>
   <!-- Header/Navigation -->
   <header class="header">
-
-    <div class='container'>
-      <nav class='navbar'>
-        <div class='logo'>
-          <i class='fas fa-graduation-cap'></i>
-          <span><?php echo $student_name; ?></span>
+    <div class="container">
+      <nav class="navbar">
+        <div class="logo">
+          <i class="fas fa-graduation-cap"></i>
+          <span><?php echo htmlspecialchars($student_name); ?></span>
         </div>
-
         <ul class="nav-menu">
           <li class="nav-item">
             <a href="#available-courses" class="nav-link active" data-tab="available-courses">Available Courses</a>
@@ -651,34 +479,20 @@ $result1 = $stmt1->get_result();
             <a href="#my-courses" class="nav-link" data-tab="my-courses">My Courses</a>
           </li>
         </ul>
-
         <div class="user-menu">
           <div class="user-info">
-            <div class="user-avatar"></div>
-            <span class="user-name"></span>
+            <div class="user-avatar"><?php echo strtoupper(substr($student_name, 0, 2)); ?></div>
+            <span class="user-name"><?php echo htmlspecialchars($student_name); ?></span>
           </div>
         </div>
-
         <div class="logout-container" style="position: absolute; top: 20px; right: 20px;">
-
           <form action="logout.php" method="post">
-            <button type="submit" class="logout-button" style="
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-          ">Logout</button>
+            <button type="submit" class="logout-btn">Logout</button>
           </form>
-
         </div>
       </nav>
     </div>
   </header>
-
   <!-- Available Courses Tab -->
   <div class="main-content active" id="available-courses">
     <div class="container">
@@ -686,91 +500,77 @@ $result1 = $stmt1->get_result();
         <h1 class="page-title">Available Courses</h1>
         <p class="page-subtitle">Explore courses available for registration</p>
       </div>
-
       <div class="course-grid">
         <?php
+        if (!empty($courses)) {
+          foreach ($courses as $course) {
+            $course_id    = htmlspecialchars($course['ID']);
+            $course_name  = htmlspecialchars($course['Name']);
+            $price        = $course['Price'];
+            $category     = htmlspecialchars($course['Category']);
+            $instructor_id = $course['InstructorID'];
+            $description  = htmlspecialchars($course['Description']);
+            $description  = (strlen($description) > 150) ? substr($description, 0, 150) . '...' : $description;
+            $eta          = htmlspecialchars($course['EstimatedTimeOfCompletion']);
 
+            // Fetch instructor name for the course
+            $instructorQuery = "SELECT Name FROM Instructors WHERE ID = ?";
+            $stmtInst = $pdo->prepare($instructorQuery);
+            $stmtInst->execute([$instructor_id]);
+            $instData = $stmtInst->fetch(PDO::FETCH_ASSOC);
+            $instructor_name = $instData ? htmlspecialchars($instData['Name']) : 'Unknown Instructor';
 
-        // Check if courses exist
-        if ($result->num_rows > 0) {
-          // Output each course
-          while ($row = $result->fetch_assoc()) {
-            // Fetch course data
-            $price = $row['Price'];
-            $course_id = $row['ID'];
-            $course_name = $row['Name'];
-            $category = $row['Category'];
-            $instructor_id = $row['InstructorID'];
-            $description = $row['Description'];
-            $description = (strlen($description) > 150) ? substr($description, 0, 150) . '...' : $description;
-            $eta = $row['EstimatedTimeOfCompletion']; // Assuming you have a StartDate field
-
-            // Fetch instructor name (you can join tables if needed)
-            $instructor_query = "SELECT Name FROM instructors WHERE ID = '$instructor_id'";
-            $instructor_result = $conn->query($instructor_query);
-            $instructor_name = ($instructor_result->num_rows > 0) ? $instructor_result->fetch_assoc()['Name'] : 'Unknown Instructor';
-            // Check if the student is already registered for this course
+            // Check if the student is registered for the course
             $status = null;
-            $checkStmt = $conn->prepare("SELECT StatusOfCompletion FROM CourseRegistration WHERE CourseID = ? AND StudentID = ?");
-            $checkStmt->bind_param("ss", $course_id, $student_id);
-            $checkStmt->execute();
-            $checkResult = $checkStmt->get_result();
-            if ($checkRow = $checkResult->fetch_assoc()) {
-              $status = $checkRow['StatusOfCompletion'];
+            $checkStmt = $pdo->prepare("SELECT StatusOfCompletion FROM CourseRegistration WHERE CourseID = ? AND StudentID = ?");
+            $checkStmt->execute([$course_id, $student_id]);
+            $checkData = $checkStmt->fetch(PDO::FETCH_ASSOC);
+            if ($checkData) {
+              $status = $checkData['StatusOfCompletion'];
             }
-            $checkStmt->close();
-            // Display each course as a card
-            echo "
-            <div class='course-card' data-course-id='$course_id'>
-              <div class='course-banner'>
-                <i class='fas fa-laptop-code'></i>
-                <span class='course-category'>$category</span>
+        ?>
+            <div class="course-card" data-course-id="<?php echo $course_id; ?>">
+              <div class="course-banner">
+                <i class="fas fa-laptop-code"></i>
+                <span class="course-category"><?php echo $category; ?></span>
               </div>
-              <div class='course-content'>
-                <h3 class='course-title'>$course_name</h3>
-                <div class='course-meta'>
-                  <div class='course-instructor'>
-                    <i class='fas fa-user'></i>
-                    <span>$instructor_name</span>
+              <div class="course-content">
+                <h3 class="course-title"><?php echo $course_name; ?></h3>
+                <div class="course-meta">
+                  <div class="course-instructor">
+                    <i class="fas fa-user"></i>
+                    <span><?php echo $instructor_name; ?></span>
                   </div>
-                  <div class='course-credits'>
-                    <i class='fas fa-award'></i>
-                    <span>$price</span>
+                  <div class="course-credits">
+                    <i class="fas fa-award"></i>
+                    <span><?php echo $price; ?></span>
                   </div>
                 </div>
-                <p class='course-description'>$description</p>
-                <div class='course-footer'>
-
-                    " . (
-              $status === null
-              ? "<a href='fees.php?course_id=$course_id&student_id=$student_id' class='view-details-btn'>
-                                <i class='fas fa-info-circle'></i>
-                                <span>Register</span>
-                            </a>"
-              : "<span class='status-label " . ($status === 'Completed' ? "completed" : "in-progress") . "'>
-                                <i class='fas fa-check-circle'></i> $status
-                            </span>"
-            ) . "
-                  <div class='Time'>
-                    <i class='far fa-calendar-alt'></i> Time $eta
+                <p class="course-description"><?php echo $description; ?></p>
+                <div class="course-footer">
+                  <?php
+                  if ($status === null) {
+                    echo "<a href='fees.php?course_id={$course_id}&student_id={$student_id}' class='view-details-btn'><i class='fas fa-info-circle'></i> <span>Register</span></a>";
+                  } else {
+                    $statusClass = (strtolower($status) == 'completed') ? 'status-label completed' : 'status-label in-progress';
+                    echo "<span class='{$statusClass}'><i class='fas fa-check-circle'></i> {$status}</span>";
+                  }
+                  ?>
+                  <div class="Time">
+                    <i class="far fa-calendar-alt"></i> Time <?php echo $eta; ?>
                   </div>
                 </div>
               </div>
             </div>
-          ";
+        <?php
           }
         } else {
           echo "<p>No available courses found.</p>";
         }
-
-        // Close the database connection
-        $conn->close();
         ?>
       </div>
-
     </div>
   </div>
-
   <!-- My Courses Tab -->
   <div class="main-content" id="my-courses">
     <div class="container">
@@ -778,7 +578,6 @@ $result1 = $stmt1->get_result();
         <h1 class="page-title">My Courses</h1>
         <p class="page-subtitle">View your registered courses and their status</p>
       </div>
-
       <div class="course-table-container">
         <table class="course-table">
           <thead>
@@ -792,60 +591,45 @@ $result1 = $stmt1->get_result();
           </thead>
           <tbody>
             <?php
-
-
-            if ($result1->num_rows > 0) {
-              while ($row1 = $result1->fetch_assoc()) {
-                $status_class = strtolower($row1['StatusOfCompletion']) == 'completed' ? 'status-complete' : (strtolower($row1['StatusOfCompletion']) == 'in progress' ? 'status-progress' : 'status-pending');
-
+            if (!empty($registeredCourses)) {
+              foreach ($registeredCourses as $reg) {
+                $status_class = (mb_strtolower($reg['StatusOfCompletion']) == 'completed') ? 'status-complete' : ((mb_strtolower($reg['StatusOfCompletion']) == 'in progress') ? 'status-progress' : 'status-pending');
                 echo "
-                <tr onclick=\"window.location.href='stud_view_course.php?course_id={$row1['CourseID']}&student_id=$student_id'\" style=\"cursor:pointer;\">
-                <td class='course-code'>{$row1['CourseID']}</td>
-                <td class='course-name'>{$row1['CourseName']}</td>
-                <td>{$row1['InstructorName']}</td>
-                <td>" . date("M d, Y", strtotime($row1['DateOfRegistration'])) . "</td>
-                <td><span class='status-badge $status_class'><i class='fas fa-clock'></i> {$row1['StatusOfCompletion']}</span></td>
-              </tr>
-                ";
+                        <tr onclick=\"window.location.href='stud_view_course.php?course_id={$reg['CourseID']}&student_id={$student_id}'\" style=\"cursor:pointer;\">
+                          <td class='course-code'>{$reg['CourseID']}</td>
+                          <td class='course-name'>{$reg['CourseName']}</td>
+                          <td>{$reg['InstructorName']}</td>
+                          <td>" . date("M d, Y", strtotime($reg['DateOfRegistration'])) . "</td>
+                          <td><span class='status-badge {$status_class}'><i class='fas fa-clock'></i> {$reg['StatusOfCompletion']}</span></td>
+                        </tr>
+                      ";
               }
             } else {
               echo "<tr><td colspan='5'>No registered courses found.</td></tr>";
             }
-
-            $stmt1->close();
             ?>
-
-
           </tbody>
         </table>
-
       </div>
     </div>
   </div>
-
-
-  <!-- JavaScript for functionality -->
+  <!-- JavaScript for Tab Navigation -->
   <script>
-    // Tab Navigation
     const navLinks = document.querySelectorAll('.nav-link');
-    const mainContent = document.querySelectorAll('.main-content');
+    const mainContents = document.querySelectorAll('.main-content');
 
     navLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
-
-        // Remove active class from all links and contents
         navLinks.forEach(l => l.classList.remove('active'));
-        mainContent.forEach(content => content.classList.remove('active'));
+        mainContents.forEach(content => content.classList.remove('active'));
 
-        // Add active class to clicked link and corresponding content
         link.classList.add('active');
         const tabId = link.getAttribute('data-tab');
         document.getElementById(tabId).classList.add('active');
       });
     });
   </script>
-
 </body>
 
 </html>
