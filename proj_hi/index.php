@@ -1,60 +1,56 @@
 <?php
+
+/**
+ * File: index.php
+ * Author: ATP
+ *
+ * Student login page that authenticates students using a PDO connection.
+ */
+
 session_start();
-$host = "localhost";
-$user = "root";
-$password = "";
-$db = "lab8_elearn";
+require_once 'dbh.inc.php'; // Include the PDO connection from dbh.inc.php
 
-// Connect to MySQL
-$conn = new mysqli($host, $user, $password, $db);
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
+// Initialize error message variable.
+$errorMessage = '';
 
-// Initialize variables
-$error = "";
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+  $usernameInput = trim($_POST['username']);
+  $passwordInput = $_POST['password'];
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $username = trim($_POST['username']);
-  $password_input = $_POST['password'];
-
+  // Prepare statement to retrieve student data.
   $sql = "SELECT * FROM Students WHERE Username = ?";
-  $stmt = $conn->prepare($sql);
-  $stmt->bind_param("s", $username);
+  $stmt = $dbConnection->prepare($sql);
 
-  if ($stmt->execute()) {
-    $result = $stmt->get_result();
-    if ($result->num_rows == 1) {
-      $student = $result->fetch_assoc();
-
-      // Directly compare plain text passwords
-      if ($password_input === $student['Password']) {
-        $_SESSION['student_id'] = $student['ID'];
+  if ($stmt->execute([$usernameInput])) {
+    if ($stmt->rowCount() === 1) {
+      $student = $stmt->fetch();
+      // Compare plaintext passwords; in production, be sure to hash passwords.
+      if ($passwordInput === $student['Password']) {
+        $_SESSION['student_id']   = $student['ID'];
         $_SESSION['student_name'] = $student['Name'];
         header("Location: student_dashboard.php");
         exit();
       } else {
-        $error = "Invalid password.";
+        $errorMessage = "Invalid password.";
       }
     } else {
-      $error = "Student not found.";
+      $errorMessage = "Student not found.";
     }
   } else {
-    $error = "Database error.";
+    $errorMessage = "Database error.";
   }
-  $stmt->close();
 }
-$conn->close();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Student Login</title>
   <style>
+    /* Reset box-sizing and margin */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -62,108 +58,109 @@ $conn->close();
     }
 
     body {
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      height: 100vh;
+      background: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
+      font-family: Arial, sans-serif;
+      min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 20px;
     }
 
-    .login-box {
-      width: 400px;
-      background: white;
-      padding: 40px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      border-radius: 12px;
+    .login-container {
+      width: 380px;
+      background: #ffffff;
+      padding: 35px 30px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
     }
 
     .login-header {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 25px;
     }
 
     .login-header h2 {
-      color: #2d3748;
-      font-size: 28px;
-      font-weight: 600;
-      margin-bottom: 8px;
+      font-size: 26px;
+      color: #333;
+      margin-bottom: 5px;
     }
 
     .login-header p {
-      color: #718096;
-      font-size: 16px;
+      font-size: 14px;
+      color: #666;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
-    .form-group label {
+    label {
       display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-      color: #4a5568;
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #444;
     }
 
-    .form-control {
+    .form-input {
       width: 100%;
-      padding: 14px;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: all 0.3s ease;
+      padding: 12px 10px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.3s ease;
     }
 
-    .form-control:focus {
+    .form-input:focus {
       outline: none;
-      border-color: #4299e1;
-      box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+      border-color: #5a9bd5;
+      box-shadow: 0 0 0 3px rgba(90, 155, 213, 0.2);
     }
 
-    .btn-login {
-      background-color: #4299e1;
-      color: white;
-      padding: 14px;
+    .btn-submit {
       width: 100%;
+      padding: 12px;
+      background-color: #5a9bd5;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
+      font-size: 15px;
+      color: white;
       cursor: pointer;
-      font-size: 16px;
-      font-weight: 600;
-      transition: all 0.3s ease;
+      transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
-    .btn-login:hover {
-      background-color: #3182ce;
+    .btn-submit:hover {
+      background-color: #478ac9;
       transform: translateY(-2px);
     }
 
-    .error {
-      color: #e53e3e;
-      text-align: center;
-      margin-bottom: 20px;
+    .alert {
+      background: #fdecea;
+      border: 1px solid #f5c2c0;
       padding: 10px;
-      background-color: #fff5f5;
       border-radius: 6px;
-    }
-
-    .note {
-      color: #718096;
+      color: #cc1f1a;
       text-align: center;
-      margin-top: 20px;
-      font-size: 15px;
+      margin-bottom: 15px;
     }
 
-    .link {
-      color: #4299e1;
+    .info {
+      font-size: 13px;
+      text-align: center;
+      color: #555;
+    }
+
+    .info a {
+      color: #5a9bd5;
       text-decoration: none;
-      font-weight: 500;
-      transition: all 0.2s ease;
+      font-weight: bold;
+      transition: color 0.2s ease;
     }
 
-    .link:hover {
-      color: #3182ce;
+    .info a:hover {
+      color: #478ac9;
       text-decoration: underline;
     }
 
@@ -178,62 +175,52 @@ $conn->close();
       position: absolute;
       top: 50%;
       left: 0;
-      right: 0;
+      width: 100%;
       height: 1px;
-      background-color: #e2e8f0;
+      background: #ddd;
+      z-index: -1;
     }
 
-    .divider-text {
-      position: relative;
-      background-color: white;
+    .divider span {
+      background: #ffffff;
       padding: 0 10px;
-      color: #718096;
-    }
-
-    .remember-me {
-      display: flex;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .remember-me input {
-      margin-right: 8px;
+      color: #888;
     }
   </style>
 </head>
 
 <body>
-  <div class="login-box">
+  <div class="login-container">
     <div class="login-header">
       <h2>Student Login</h2>
-      <p>Please enter your credentials to login</p>
+      <p>Please enter your details below</p>
     </div>
 
-    <?php if (!empty($error)) echo "<div class='error'>$error</div>"; ?>
+    <?php if (!empty($errorMessage)): ?>
+      <div class="alert">
+        <?= htmlspecialchars($errorMessage) ?>
+      </div>
+    <?php endif; ?>
 
     <form method="POST" action="">
       <div class="form-group">
         <label for="username">Username</label>
-        <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required />
+        <input type="text" name="username" id="username" class="form-input" placeholder="Enter your username" required />
       </div>
 
       <div class="form-group">
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required />
+        <input type="password" name="password" id="password" class="form-input" placeholder="Enter your password" required />
       </div>
 
-      <button type="submit" class="btn-login">Login</button>
+      <button type="submit" class="btn-submit">Log In</button>
 
       <div class="divider">
-        <span class="divider-text">or</span>
+        <span>or</span>
       </div>
 
-      <p class="note">
-        Don't have an account? <a href="stud_reg.php" class="link">Register</a>
-      </p>
-      <p class="note" style="margin-top: 10px;">
-        Professor? <a href="prof_login.php" class="link">Professor Portal</a>
-      </p>
+      <p class="info">Don't have an account? <a href="stud_reg.php">Register</a></p>
+      <p class="info" style="margin-top: 8px;">Professor? <a href="prof_login.php">Access Portal</a></p>
     </form>
   </div>
 </body>
