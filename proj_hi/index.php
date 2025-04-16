@@ -2,9 +2,9 @@
 
 /**
  * File: index.php
- * Author: ATP
+ * Author: Aryan Gupta
  *
- * Student login page that authenticates students using a PDO connection.
+ * Student login page for eLearn that authenticates students using a PDO connection.
  */
 
 session_start();
@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
   // Prepare statement to retrieve student data.
   $sql = "SELECT * FROM Students WHERE Username = ?";
-  $stmt = $dbConnection->prepare($sql);
+  $stmt = $pdo->prepare($sql);
 
   if ($stmt->execute([$usernameInput])) {
     if ($stmt->rowCount() === 1) {
@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Student Login</title>
+  <title>eLearn</title>
   <style>
     /* Reset box-sizing and margin */
     * {
@@ -62,9 +62,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       font-family: Arial, sans-serif;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 20px;
+    }
+
+    .site-heading {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .site-heading h1 {
+      font-size: 38px;
+      color: #333;
     }
 
     .login-container {
@@ -73,7 +84,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
       padding: 35px 30px;
       border-radius: 10px;
       box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-      position: relative;
     }
 
     .login-header {
@@ -190,6 +200,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </head>
 
 <body>
+  <!-- Website Heading -->
+  <div class="site-heading">
+    <h1>eLearn</h1>
+  </div>
+
   <div class="login-container">
     <div class="login-header">
       <h2>Student Login</h2>
