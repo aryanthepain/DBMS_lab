@@ -1,56 +1,56 @@
 <?php
-$host = "localhost";
-$user = "root";
-$password = "";
-$db = "DA215_Project2";
 
-$conn = new mysqli($host, $user, $password, $db);
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
+/**
+ * File: stud_reg.php
+ * Author: Aryan Gupta
+ *
+ * Student registration page for eLearn using a PDO connection.
+ */
 
+session_start();
+require_once 'dbh.inc.php'; // This file creates a PDO connection stored in $pdo
 
-$success = "";
-$error = "";
+$successMessage = "";
+$errorMessage   = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $id = trim($_POST['id']);
-  $name = trim($_POST['name']);
-  $phone = trim($_POST['phone']);
-  $email = trim($_POST['email']);
-  $username = trim($_POST['username']);
-  $password_raw = $_POST['password'];
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+  // Retrieve and trim form inputs
+  $studentID   = trim($_POST['id']);
+  $fullName    = trim($_POST['name']);
+  $phoneNumber = trim($_POST['phone']);
+  $email       = trim($_POST['email']);
+  $username    = trim($_POST['username']);
+  $passwordRaw = $_POST['password'];
 
-  // Hash the password
-  $hashed_password = $password_raw;
+  // For demonstration, storing plain text password (hash in production)
+  $storedPassword = $passwordRaw;
 
-  // Prepare statement to prevent SQL injection
-  $stmt = $conn->prepare("INSERT INTO Students (`ID`,`Name`, PhoneNo, Email, Username, `Password`) VALUES (?,?, ?, ?, ?, ?)");
-  $stmt->bind_param("ssssss", $id, $name, $phone, $email, $username, $hashed_password);
-
-  if ($stmt->execute()) {
-    $success = "Registration successful! You can now <a href='index.php'>log in</a>.";
-  } else {
-    if ($conn->errno == 1062) {
-      $error = "Username / ID already exists. Please choose another.";
+  try {
+    // Prepare PDO statement to insert the new student into the Students table
+    $sql  = "INSERT INTO Students (ID, Name, PhoneNo, Email, Username, Password) VALUES (?,?,?,?,?,?)";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$studentID, $fullName, $phoneNumber, $email, $username, $storedPassword]);
+    $successMessage = "Registration successful! You can now <a href='index.php'>log in</a>.";
+  } catch (PDOException $e) {
+    // Duplicate entry (SQLSTATE 23000) indicates a username/ID conflict
+    if ($e->getCode() == 23000) {
+      $errorMessage = "Username / ID already exists. Please choose another.";
     } else {
-      $error = "Registration failed: " . $conn->error;
+      $errorMessage = "Registration failed: " . $e->getMessage();
     }
   }
-
-  $stmt->close();
 }
-$conn->close();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Registration</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Registration - eLearn</title>
   <style>
+    /* Global reset */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -58,82 +58,94 @@ $conn->close();
     }
 
     body {
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
+      font-family: Arial, sans-serif;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 20px;
     }
 
-    .register-box {
-      width: 450px;
-      background: white;
-      padding: 40px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      border-radius: 12px;
-      margin: 40px auto;
-    }
-
-    .register-header {
+    /* Website heading styling */
+    .site-heading {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
 
-    .register-header h2 {
-      color: #2d3748;
-      font-size: 28px;
-      font-weight: 600;
-      margin-bottom: 8px;
+    .site-heading h1 {
+      font-size: 38px;
+      color: #333;
     }
 
-    .register-header p {
-      color: #718096;
-      font-size: 16px;
+    /* Registration container styling matching index.php */
+    .reg-container {
+      width: 380px;
+      background: #ffffff;
+      padding: 35px 30px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .reg-header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .reg-header h2 {
+      font-size: 26px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .reg-header p {
+      font-size: 14px;
+      color: #666;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
 
     .form-group label {
       display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-      color: #4a5568;
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #444;
     }
 
     .form-control {
       width: 100%;
-      padding: 14px;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 16px;
-      transition: all 0.3s ease;
+      padding: 12px 10px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      transition: border-color 0.3s ease;
     }
 
     .form-control:focus {
       outline: none;
-      border-color: #48bb78;
-      box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.2);
+      border-color: #5a9bd5;
+      box-shadow: 0 0 0 3px rgba(90, 155, 213, 0.2);
     }
 
-    .btn-register {
-      background-color: #48bb78;
-      color: white;
-      padding: 14px;
+    .btn-submit {
       width: 100%;
+      padding: 12px;
+      background-color: #5a9bd5;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
+      font-size: 15px;
+      color: white;
       cursor: pointer;
-      font-size: 16px;
-      font-weight: 600;
-      transition: all 0.3s ease;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.2s ease;
     }
 
-    .btn-register:hover {
-      background-color: #38a169;
+    .btn-submit:hover {
+      background-color: #478ac9;
       transform: translateY(-2px);
     }
 
@@ -142,36 +154,37 @@ $conn->close();
       margin-bottom: 20px;
       padding: 12px;
       border-radius: 6px;
-    }
-
-    .success {
-      color: #2f855a;
-      background-color: #f0fff4;
-      border: 1px solid #c6f6d5;
-    }
-
-    .error {
-      color: #e53e3e;
-      background-color: #fff5f5;
-      border: 1px solid #fed7d7;
-    }
-
-    .note {
-      color: #718096;
-      text-align: center;
-      margin-top: 20px;
       font-size: 15px;
     }
 
+    .success {
+      color: #2e7d32;
+      background-color: #e8f5e9;
+      border: 1px solid #a5d6a7;
+    }
+
+    .error {
+      color: #c62828;
+      background-color: #ffebee;
+      border: 1px solid #ef9a9a;
+    }
+
+    .note {
+      color: #666;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
     .link {
-      color: #48bb78;
+      color: #5a9bd5;
       text-decoration: none;
-      font-weight: 500;
-      transition: all 0.2s ease;
+      font-weight: bold;
+      transition: color 0.2s ease;
     }
 
     .link:hover {
-      color: #38a169;
+      color: #478ac9;
       text-decoration: underline;
     }
 
@@ -188,34 +201,39 @@ $conn->close();
       left: 0;
       right: 0;
       height: 1px;
-      background-color: #e2e8f0;
+      background-color: #ddd;
+      z-index: -1;
     }
 
-    .divider-text {
+    .divider span {
       position: relative;
-      background-color: white;
+      background: #ffffff;
       padding: 0 10px;
-      color: #718096;
-    }
-
-    @media (max-width: 500px) {
-      .register-box {
-        width: 100%;
-        padding: 30px 20px;
-      }
+      color: #888;
     }
   </style>
 </head>
 
 <body>
-  <div class="register-box">
-    <div class="register-header">
+  <!-- Website Heading -->
+  <div class="site-heading">
+    <h1>eLearn</h1>
+  </div>
+
+  <div class="reg-container">
+    <div class="reg-header">
       <h2>Student Registration</h2>
       <p>Create your student account</p>
     </div>
 
-    <?php if ($success) echo "<div class='message success'>$success</div>"; ?>
-    <?php if ($error) echo "<div class='message error'>$error</div>"; ?>
+    <?php
+    if ($successMessage) {
+      echo "<div class='message success'>$successMessage</div>";
+    }
+    if ($errorMessage) {
+      echo "<div class='message error'>$errorMessage</div>";
+    }
+    ?>
 
     <form method="POST" action="">
       <div class="form-group">
@@ -226,31 +244,26 @@ $conn->close();
         <label for="id">Student ID</label>
         <input type="text" id="id" name="id" class="form-control" placeholder="Enter your Student ID" required />
       </div>
-
       <div class="form-group">
         <label for="phone">Phone Number</label>
         <input type="text" id="phone" name="phone" class="form-control" placeholder="Enter your phone number" required />
       </div>
-
       <div class="form-group">
         <label for="email">Email Address</label>
         <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email address" required />
       </div>
-
       <div class="form-group">
         <label for="username">Username</label>
         <input type="text" id="username" name="username" class="form-control" placeholder="Choose a username" required />
       </div>
-
       <div class="form-group">
         <label for="password">Password</label>
         <input type="password" id="password" name="password" class="form-control" placeholder="Create a strong password" required />
       </div>
-
-      <button type="submit" class="btn-register">Register</button>
+      <button type="submit" class="btn-submit">Register</button>
 
       <div class="divider">
-        <span class="divider-text">or</span>
+        <span>or</span>
       </div>
 
       <p class="note">
