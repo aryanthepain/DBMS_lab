@@ -1,4 +1,9 @@
 <?php
+
+/**
+ * File: prof_reg.php
+ * Author: Aryan Gupta
+ */
 //Destroying all the Session variables
 session_start();
 session_unset();
